@@ -5,13 +5,14 @@ import logging
 import datetime
 from pathlib import Path
 from typing import Optional, Tuple
+from blogi.core.config import PROJECT_ROOT
 
-class DeployManager:
+class AIDeployManager:
     _instance = None
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(DeployManager, cls).__new__(cls)
+            cls._instance = super(AIDeployManager, cls).__new__(cls)
             cls._instance._initialized = False
         return cls._instance
     
@@ -19,8 +20,8 @@ class DeployManager:
         if self._initialized:
             return
             
-        self.project_root = Path(os.getenv('PROTOBLOG_PROJECT_ROOT'))
-        self.ai_blog_site_path = Path(os.getenv('AI_BLOG_SITE_PATH'))
+        self.project_root = PROJECT_ROOT
+        self.ai_blog_site_path = PROJECT_ROOT / "ai_blog"
         self.source_path = self.ai_blog_site_path / 'content' / 'posts'
         self.file_path = None
         
@@ -135,7 +136,7 @@ class DeployManager:
 
 def main(agent_type: str, agent_name: str, **kwargs):
     """Main entry point for deployment process."""
-    deploy_manager = DeployManager()
+    deploy_manager = AIDeployManager()
     
     # Run the AI agent
     python_script = deploy_manager.project_root / 'blogi' / 'ai_agents' / 'main.py'

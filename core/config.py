@@ -8,8 +8,8 @@ import logging
 load_dotenv()
 
 # Add project root to Python path
-PROJECT_ROOT = Path(os.getenv('PROJECT_ROOT'))
-AI_BLOG_SITE_PATH = Path(os.getenv('AI_BLOG_SITE_PATH'))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+AI_BLOG_SITE_PATH = PROJECT_ROOT / "ai_blog"
 
 # Agent Types
 BLOG_RESEARCHER_AI_AGENT = "blog_researcher_ai_agent"

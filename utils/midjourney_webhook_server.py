@@ -12,12 +12,8 @@ import datetime
 
 from PIL import Image
 
-# Add the project root to the Python path
-project_root = Path(os.getenv('PROTOBLOG_PROJECT_ROOT'))
-sys.path.append(str(project_root))
-
-from ai_agents.core.config import setup_logging, logger
-from admin_panel.deployment.deploy_manager import DeployManager
+from blogi.core.config import setup_logging, logger, PROJECT_ROOT
+from blogi.deployment.ai_deploy_manager import AIDeployManager
 
 app = Flask(__name__)
 logger = setup_logging()
@@ -25,7 +21,7 @@ logger = setup_logging()
 class MidjourneyWebhookHandler:
     def __init__(self):
         self.downloadstub = "openmid"
-        self.deploy_manager = DeployManager()
+        self.deploy_manager = AIDeployManager()
         self.project_root = Path(os.getenv('PROTOBLOG_PROJECT_ROOT'))
         self.processed_urls = set()  # Add cache for processed URLs
 

@@ -9,23 +9,21 @@ from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
 # Use absolute imports
-from ai_agents.services.anthropic_service import AnthropicService
-from ai_agents.services.brave_search_service import BraveSearchClient
-from ai_agents.core.web_service import WebService
-from ai_agents.generators.artist_post import ArtistPostGenerator
-from ai_agents.generators.researcher_post import ResearcherPostGenerator
-from ai_agents.core.config import CLAUDE_MODEL, PROJECT_ROOT, POSTS_PATH
+from blogi.services.anthropic_service import AnthropicService
+from blogi.services.brave_search_service import BraveSearchClient
+from blogi.core.web_service import WebService
+from blogi.generators.artist_post import ArtistPostGenerator
+from blogi.generators.researcher_post import ResearcherPostGenerator
+from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, POSTS_PATH
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class BlogAgent:
     def __init__(self, agent_name: str, agent_type: str, topic: Optional[str] = None, 
                  image_prompt: Optional[str] = None, model: str = CLAUDE_MODEL):
         
         # Initialize project root
-        self.project_root = Path(PROJECT_ROOT)
-        self.posts_path = Path(POSTS_PATH)
         
         self.web_service = WebService()
         
@@ -43,7 +41,7 @@ class BlogAgent:
         self._is_closed = False
         
         # Set up paths for templates and prompts
-        prompts_base = Path(PROJECT_ROOT) / "blogi" / "ai_agents" / "prompts"
+        prompts_base = PROJECT_ROOT / "blogi" / "ai_agents" / "prompts"
         agent_prompts = os.path.join(prompts_base, agent_name)
         common_prompts = os.path.join(prompts_base, "_common")
 
@@ -222,8 +220,8 @@ class BlogAgent:
     async def save_to_content(self, filename: str, content: str) -> Optional[str]:
         """Save content to an Post."""
         try:
-            self.posts_path.mkdir(parents=True, exist_ok=True)
-            filepath = self.posts_path / filename
+            POSTS_PATH.mkdir(parents=True, exist_ok=True)
+            filepath = POSTS_PATH / filename
             
             async with aiofiles.open(filepath, mode='w') as file:
                 await file.write(content)

@@ -11,20 +11,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Add project root to Python path
-PROJECT_ROOT = Path(os.getenv('PROJECT_ROOT'))
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
-# Now we can import from ai_agents
-from ai_agents.core.config import BLOG_AGENT_TYPES, BLOG_AGENT_NAMES, PROJECT_ROOT, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT  
+# Now we can import from blogi
+from blogi.core.config import BLOG_AGENT_TYPES, BLOG_AGENT_NAMES, PROJECT_ROOT, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT  
 
 app = Flask(__name__, static_url_path='/static')
 
 def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
     """Execute the command using the Python deployment manager."""
     try:
-        from deployment.deploy_manager import DeployManager, main as deploy_main
+        from blogi.deployment.ai_deploy_manager import AIDeployManager, main as deploy_main
         
         # Get kwargs for main function
         kwargs = {
@@ -49,7 +48,7 @@ def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=No
         # Get blog URL if successful
         if success:
             try:
-                deploy_manager = DeployManager()
+                deploy_manager = AIDeployManager()
                 success, blog_url, error = deploy_manager.get_latest_file()
                 if success and blog_url:
                     return True, "Deployment completed successfully", blog_url

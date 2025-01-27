@@ -8,12 +8,12 @@ from datetime import datetime
 from pathlib import Path
 
 # Use absolute imports consistently
-from ai_agents.core.config import (
+from blogi.core.config import (
     BLOG_RESEARCHER_AI_AGENT,
     BLOG_ARTIST_AI_AGENT,
     PROJECT_ROOT
 )
-from ai_agents.core.agent import BlogAgent
+from blogi.core.agent import BlogAgent
 
 from services.process_image_service import ProcessImageService
 from utils.validation import verify_paths, check_dependencies
@@ -21,7 +21,7 @@ from utils.path_utils import ensure_directory_structure
 from services.openai_random_image_prompt_service import OpenAIRandomImagePromptService
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 def setup_argparser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description='Generate a blog post')

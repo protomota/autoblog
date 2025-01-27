@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger, PROJECT_ROOT
 
 class ArtistPostGenerator:
     def __init__(self, agent):
@@ -65,7 +65,7 @@ class ArtistPostGenerator:
         }
 
     async def _save_timestamp(self, timestamp: str):
-        temp_dir = Path(os.getenv('PROTOBLOG_PROJECT_ROOT')) / "tmp"
+        temp_dir = PROJECT_ROOT / "tmp"
         temp_dir.mkdir(parents=True, exist_ok=True)
         timestamp_file = temp_dir / "current_image_timestamp.txt"
         timestamp_file.write_text(timestamp)
