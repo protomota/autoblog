@@ -16,7 +16,7 @@ load_dotenv()
 from blogi.core.config import logger
 
 # Now we can import from blogi
-from blogi.core.config import BLOG_AGENT_TYPES, BLOG_AGENT_NAMES, PROJECT_ROOT, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT  
+from blogi.core.config import BLOG_AGENT_TYPES, BLOG_AGENT_NAMES, PROJECT_ROOT, BLOGI_ROOT, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT  
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -87,7 +87,7 @@ def run_midjourney():
     apple_script = f'''
     tell application "Terminal"
         activate
-        do script "cd {PROJECT_ROOT} && python blogi/ai_agents/utils/midjourney_webhook_server.py"
+        do script "source {PROJECT_ROOT}/venv/bin/activate && python {BLOGI_ROOT}/ai_agents/utils/midjourney_webhook_server.py"
     end tell
     '''
     

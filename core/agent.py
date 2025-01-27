@@ -220,8 +220,8 @@ class BlogAgent:
     async def save_to_content(self, filename: str, content: str) -> Optional[str]:
         """Save content to an Post."""
         try:
-            POSTS_PATH.mkdir(parents=True, exist_ok=True)
-            filepath = POSTS_PATH / filename
+            AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
+            filepath = AI_POSTS_PATH / filename
             
             async with aiofiles.open(filepath, mode='w') as file:
                 await file.write(content)
