@@ -1,16 +1,21 @@
+import os
+import sys
+from pathlib import Path
+
+# Get the absolute path to the project root (protomota directory)
+PROJECT_ROOT = str(Path(__file__).resolve().parents[2])  # Go up 3 levels: admin -> blogi -> protomota
+
+# Add project root to PYTHONPATH and sys.path
+os.environ['PYTHONPATH'] = PROJECT_ROOT
+sys.path.insert(0, PROJECT_ROOT)
+
+# Now import Flask and other standard libraries
 from flask import Flask, render_template, request, jsonify, url_for
 import subprocess
 import json
 import shlex
-import os
-from pathlib import Path
-import sys
 
-# Add the parent directory of the project root to Python path
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.append(str(PROJECT_ROOT.parent))
-
-# Move these imports after setting up the Python path
+# Now import blogi modules
 from blogi.core.config import logger
 from blogi.core.config import (
     BLOG_AGENT_TYPES, 
