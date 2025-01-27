@@ -12,7 +12,11 @@ import datetime
 
 from PIL import Image
 
-from blogi.core.config import setup_logging, logger, PROJECT_ROOT, AI_BLOG_SITE_PATH
+# Add the parent directory of the project root to Python path
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.append(str(PROJECT_ROOT.parent))
+
+from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_PATH
 from blogi.deployment.ai_deploy_manager import AIDeployManager
 
 app = Flask(__name__)

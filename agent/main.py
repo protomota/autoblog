@@ -7,11 +7,14 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+# Add the parent directory of the project root to Python path
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.append(str(PROJECT_ROOT.parent))
+
 # Use absolute imports consistently
 from blogi.core.config import (
     BLOG_RESEARCHER_AI_AGENT,
-    BLOG_ARTIST_AI_AGENT,
-    PROJECT_ROOT
+    BLOG_ARTIST_AI_AGENT
 )
 from blogi.core.agent import BlogAgent
 

@@ -8,6 +8,10 @@ import shutil
 from pathlib import Path
 from typing import Optional, Tuple
 
+# Add the parent directory of the project root to Python path
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.append(str(PROJECT_ROOT.parent))
+
 from blogi.core.config import PROJECT_ROOT, OBSIDIAN_NOTES_PATH
 
 # Debug mode flag - set to True to enable DEBUG logging
