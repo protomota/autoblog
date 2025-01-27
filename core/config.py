@@ -7,8 +7,13 @@ import logging
 # Load environment variables
 load_dotenv()
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BLOGI_ROOT = os.path.dirname(os.path.abspath(__file__))
+# Setup Source Paths
+PROJECT_ROOT = Path(__file__).parent.parent
+BLOGI_ROOT = Path(__file__).parent
+
+# Add to Python path
+sys.path.append(str(PROJECT_ROOT))
+sys.path.append(str(BLOGI_ROOT))
 
 # Setup Environment Variables
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -23,7 +28,7 @@ PROJECT_ROOT = os.getenv("PROJECT_ROOT")
 HUMAN_BLOG_URL = os.getenv("HUMAN_BLOG_URL")
 AI_BLOG_URL = os.getenv("AI_BLOG_URL")
 
-# Setup Paths
+# Setup Long Paths
 HUMAN_BLOG_SITE_PATH = PROJECT_ROOT / "human_blog"
 HUMAN_BLOG_SITE_STATIC_IMAGES_PATH = HUMAN_BLOG_SITE_PATH / "static" / "images"
 HUMAN_POSTS_PATH = HUMAN_BLOG_SITE_PATH / "content" / "posts"

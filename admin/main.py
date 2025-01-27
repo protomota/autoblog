@@ -5,18 +5,20 @@ import shlex
 import os
 from pathlib import Path
 import sys
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Add project root to Python path
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.append(str(PROJECT_ROOT))
 
-# Configure logging
+# Move these imports after setting up the Python path
 from blogi.core.config import logger
-
-# Now we can import from blogi
-from blogi.core.config import BLOG_AGENT_TYPES, BLOG_AGENT_NAMES, PROJECT_ROOT, BLOGI_ROOT, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT  
+from blogi.core.config import (
+    BLOG_AGENT_TYPES, 
+    BLOG_AGENT_NAMES, 
+    BLOGI_ROOT, 
+    BLOG_RESEARCHER_AI_AGENT, 
+    BLOG_ARTIST_AI_AGENT
+)
 
 app = Flask(__name__, static_url_path='/static')
 
