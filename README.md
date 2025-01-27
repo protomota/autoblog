@@ -335,7 +335,7 @@ cd [repository-name]
 It's recommended to use a virtual environment:
 ```bash
 # Create virtual environment
-python -m venv venv
+python3 -m venv venv
 
 # Activate virtual environment
 # On Windows:
