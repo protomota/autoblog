@@ -1,0 +1,175 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #0E1117;
+    color: #FAFAFA;
+}
+
+.container {
+    background-color: #262730;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+select, input, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #1E1E1E;
+    color: #FAFAFA;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+    height: 36px;
+}
+
+textarea {
+    height: auto;
+    min-height: 36px;
+}
+
+button {
+    background-color: #FF4B4B;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #FF6B6B;
+}
+
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    background-color: #666;
+}
+
+#output {
+    white-space: pre-wrap;
+    padding: 10px;
+    background-color: #1E1E1E;
+    border-radius: 4px;
+    display: none;
+}
+
+.hidden {
+    display: none;
+}
+
+.server-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.server-button {
+    flex: 1;
+    background-color: #4B4BFF;
+}
+
+.server-button:hover {
+    background-color: #6B6BFF;
+}
+
+h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.console-log {
+    background-color: #1E1E1E;
+    border-radius: 4px;
+    padding: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
+    white-space: pre-wrap;
+    border: 1px solid #333;
+}
+
+.console-log pre {
+    margin: 0;
+    color: #FAFAFA;
+    background-color: inherit;
+}
+
+.success {
+    color: #00FF00;
+    background-color: #1a2f1a;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.error {
+    color: #FF4B4B;
+    background-color: #2f1a1a;
+    padding: 10px;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.console-log pre:not(.success):not(.error) {
+    color: #FAFAFA;
+}
+
+#blog-url-container {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #1E1E1E;
+    border-radius: 5px;
+}
+
+#blog-url-container.hidden {
+    display: none;
+}
+
+#blog-url {
+    word-break: break-all;
+    color: #4B9AFF;
+    text-decoration: none;
+}
+
+#blog-url:hover {
+    text-decoration: underline;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #1E1E1E;
+    border-top: 3px solid #FAFAFA;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+.spinner.hidden {
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

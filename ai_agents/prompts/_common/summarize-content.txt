@@ -1,0 +1,4 @@
+Summarize the key points and main ideas from the following content in 2-3 concise paragraphs. Focus on factual information and insights that would be valuable for writing a blog post:
+
+Content:
+{content}

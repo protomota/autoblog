@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Post Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+    <h1>🤖 AI Agent Post Generator</h1>
+
+    <div class="container">
+        <h2>Step 1: Start Your Servers</h2>
+        <div class="server-buttons">
+            <button id="ngrokButton" class="server-button" type="button" onclick="runNGROKServer()">NGROK Server</button>
+            <button id="midjourneyButton" class="server-button" type="button" onclick="runMidjourneyServer()">Midjourney Webhook Server</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Step 2: Configure Your Post</h2>
+        <form id="generateForm">
+            <div class="form-group">
+                <label for="agent_type">Select Agent Type</label>
+                <select id="agent_type" name="agent_type" required>
+                    {% for agent_type in agent_types %}
+                    <option value="{{ agent_type }}" {% if agent_type == 'blog_researcher_ai_agent' %}selected{% endif %}>
+                        {% if agent_type == 'blog_researcher_ai_agent' %}
+                            Blog Researcher AI Agent
+                        {% elif agent_type == 'blog_artist_ai_agent' %}
+                            Blog Artist AI Agent
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="agent_name">Select Agent Name</label>
+                <select id="agent_name" name="agent_name" required>
+                </select>
+            </div>
+            <div id="topic_field" class="form-group">
+                <label for="topic">Topic</label>
+                <input type="text" id="topic" name="topic" placeholder="Enter your topic here...">
+            </div>
+            <div id="image_field" class="form-group hidden">
+                <label for="image_prompt">Image Prompt</label>
+                <textarea id="image_prompt" name="image_prompt" placeholder="Enter image prompt here..."></textarea>
+            </div>
+            <div id="webhook_url_field" class="form-group hidden">
+                <label for="webhook_url">Webhook URL (Get this from NGROK)</label>
+                <input type="url" id="webhook_url" name="webhook_url" placeholder="Enter webhook URL here...">
+            </div>
+            <button type="submit" id="generateButton">
+                <span id="buttonText">Generate Post</span>
+                <span id="buttonSpinner" class="spinner hidden"></span>
+            </button>
+        </form>
+        <div id="blog-url-container" class="hidden">
+            <h3 style="margin-top: 0; margin-bottom: 10px;">Generated Blog Post:</h3>
+            <a id="blog-url" href="" target="_blank"></a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Console Log</h2>
+        <div id="console-log" class="console-log">
+            <pre>Waiting for command execution...</pre>
+        </div>
+    </div>
+
+    <div id="output" class="container"></div>
+
+    <!-- Hidden element to pass agent names data to JavaScript -->
+    <script>
+        window.agentNamesData = {{ agent_names|safe }};
+    </script>
+
+    <!-- Include the external JavaScript file -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>
