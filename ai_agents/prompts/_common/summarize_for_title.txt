@@ -1,0 +1,1 @@
+Provide a eight word or less title for a blog post based on this text: {content}
