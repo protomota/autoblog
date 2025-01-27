@@ -327,8 +327,8 @@ An automated blog post generation system that uses AI agents to create both rese
 
 ### 1. Clone the Repository
 ```bash
-git clone [your-repository-url]
-cd [repository-name]
+git clone git@github.com:protomota/autoblog.git
+cd autoblog
 ```
 
 ### 2. Set Up Python Environment
@@ -338,11 +338,10 @@ It's recommended to use a virtual environment:
 python3 -m venv venv
 
 # Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-# On macOS/Linux:
 source venv/bin/activate
 ```
+You should now be in your virtual python environment. Your Terminal command prompt should now be prefixed with the environment name: (venv)
+If you need to exit, you can just type `exit`
 
 ### 3. Install Dependencies
 ```bash
