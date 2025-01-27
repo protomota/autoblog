@@ -12,7 +12,7 @@ from urllib import request
 #this is the one for the default workflow
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 
 prompt_text = """

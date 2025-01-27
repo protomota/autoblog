@@ -5,7 +5,7 @@ import os
 import logging
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class OpenAIRandomImagePromptService:
 

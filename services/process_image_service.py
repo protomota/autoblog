@@ -4,10 +4,10 @@ import os
 import logging
 from pathlib import Path
 
-from services.midjourney_image_service import MidjourneyImageService
+from blogi.services.midjourney_image_service import MidjourneyImageService
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class ProcessImageService:
 

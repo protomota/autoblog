@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 async def read_file(filepath: str) -> Optional[str]:
     try:

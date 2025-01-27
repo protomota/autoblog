@@ -2,7 +2,7 @@ import subprocess
 import urllib.parse
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class FabricService:
     """Service for handling Fabric URL processing and command execution."""

@@ -2,7 +2,7 @@ from pathlib import Path
 import logging
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 def ensure_directory_structure() -> bool:
     try:

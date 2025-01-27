@@ -4,7 +4,7 @@ from typing import Optional, List, Dict, Any
 import logging
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class BraveSearchClient:
     def __init__(self, api_key: Optional[str] = None):

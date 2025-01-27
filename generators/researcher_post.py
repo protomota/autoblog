@@ -3,7 +3,7 @@ from typing import Tuple, Optional, List, Dict
 import logging
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class ResearcherPostGenerator:
     def __init__(self, agent):
