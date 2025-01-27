@@ -15,10 +15,10 @@ from blogi.core.config import (
 )
 from blogi.core.agent import BlogAgent
 
-from services.process_image_service import ProcessImageService
-from utils.validation import verify_paths, check_dependencies
-from utils.path_utils import ensure_directory_structure
-from services.openai_random_image_prompt_service import OpenAIRandomImagePromptService
+from blogi.services.process_image_service import ProcessImageService
+from blogi.utils.validation import verify_paths, check_dependencies
+from blogi.utils.path_utils import ensure_directory_structure
+from blogi.services.openai_random_image_prompt_service import OpenAIRandomImagePromptService
 
 # Configure logging
 from blogi.core.config import logger

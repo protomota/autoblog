@@ -40,4 +40,7 @@ python-slugify==8.0.1
 PyYAML==6.0.1 
 
 # Modern Python Imaging Library 
-Pillow==10.2.0 
+Pillow==10.2.0
+
+# HTML parsing library
+beautifulsoup4==4.12.3

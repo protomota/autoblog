@@ -5,7 +5,7 @@ from typing import Optional
 from bs4 import BeautifulSoup
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 class WebService:
     def __init__(self):
