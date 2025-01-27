@@ -8,6 +8,8 @@ import shutil
 from pathlib import Path
 from typing import Optional, Tuple
 
+from blogi.core.config import PROJECT_ROOT, OBSIDIAN_NOTES_PATH
+
 # Debug mode flag - set to True to enable DEBUG logging
 DEBUG_MODE = False
 
@@ -28,11 +30,10 @@ logger = setup_logging()
 
 class DeployManager:
     def __init__(self):
-        self.human_blog_url = os.getenv('HUMAN_BLOG_URL')
-        self.obsidian_notes_path = Path(os.getenv('OBSIDIAN_NOTES_PATH'))
-        self.human_blog_site_path = Path(os.getenv('HUMAN_BLOG_SITE_PATH'))
-        self.source_path = self.obsidian_notes_path / 'posts'
-        self.dest_path = self.human_blog_site_path / 'content' / 'posts'
+        self.human_blog_url = os.getenv("HUMAN_BLOG_URL")
+        self.human_blog_site_path = PROJECT_ROOT / "human_blog"
+        self.source_path = OBSIDIAN_NOTES_PATH / "posts"
+        self.dest_path = self.human_blog_site_path / "content" / "posts"
         self.changes_made = False  # Add this flag to track changes
         
         # Configure logging
@@ -82,7 +83,7 @@ class DeployManager:
         """Verify all images are properly synced."""
         try:
             site_static_images_dir = self.human_blog_site_path / 'static' / 'images'
-            obsidian_images_dir = self.obsidian_notes_path / 'images'
+            obsidian_images_dir = OBSIDIAN_NOTES_PATH / 'images'
 
             self.logger.info("Verifying image sync:")
             self.logger.info(f"  Source: {obsidian_images_dir}")
@@ -174,7 +175,7 @@ class DeployManager:
                         self.logger.info(f"  - {source_file.name} (missing image: {image})")
                         
                         # Copy the missing image
-                        image_source = self.obsidian_notes_path / 'images' / image
+                        image_source = OBSIDIAN_NOTES_PATH / 'images' / image
                         if image_source.exists():
                             # Ensure the destination directory exists
                             dest_image.parent.mkdir(parents=True, exist_ok=True)
@@ -214,8 +215,8 @@ class DeployManager:
                     new_image_name = image.replace(' ', '_')
                     
                     # Rename the image in Obsidian notes folder if needed
-                    obsidian_image = self.obsidian_notes_path / 'images' / image
-                    new_obsidian_image = self.obsidian_notes_path / 'images' / new_image_name
+                    obsidian_image = OBSIDIAN_NOTES_PATH / 'images' / image
+                    new_obsidian_image = OBSIDIAN_NOTES_PATH / 'images' / new_image_name
                     if obsidian_image.exists() and obsidian_image != new_obsidian_image:
                         obsidian_image.rename(new_obsidian_image)
                         self.logger.info(f"    ✓ Renamed Obsidian image: {image} -> {new_image_name}")

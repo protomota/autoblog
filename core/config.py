@@ -8,6 +8,7 @@ import logging
 load_dotenv()
 
 # Add project root to Python path
+OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH"))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AI_BLOG_SITE_PATH = PROJECT_ROOT / "ai_blog"
 
