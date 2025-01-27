@@ -12,7 +12,7 @@ import datetime
 
 from PIL import Image
 
-from blogi.core.config import setup_logging, logger, PROJECT_ROOT
+from blogi.core.config import setup_logging, logger, PROJECT_ROOT, AI_BLOG_SITE_PATH
 from blogi.deployment.ai_deploy_manager import AIDeployManager
 
 app = Flask(__name__)
@@ -22,7 +22,6 @@ class MidjourneyWebhookHandler:
     def __init__(self):
         self.downloadstub = "openmid"
         self.deploy_manager = AIDeployManager()
-        self.project_root = Path(os.getenv('PROTOBLOG_PROJECT_ROOT'))
         self.processed_urls = set()  # Add cache for processed URLs
 
     def verify_signature(self, payload, signature, secret):
@@ -94,7 +93,7 @@ class MidjourneyWebhookHandler:
 
     def read_timestamp_from_file(self):
         """Read the current timestamp from file."""
-        timestamp_path = self.project_root / 'tmp' / 'current_image_timestamp.txt'
+        timestamp_path = PROJECT_ROOT / 'tmp' / 'current_image_timestamp.txt'
         try:
             timestamp = timestamp_path.read_text().strip()
             logger.info(f"Read timestamp from file: {timestamp}")
@@ -110,7 +109,7 @@ class MidjourneyWebhookHandler:
         """Process and save the image and prompt."""
         try:
             current_image_timestamp = self.read_timestamp_from_file()
-            images_path = self.project_root / 'static' / 'images' / self.downloadstub
+            images_path = AI_BLOG_SITE_PATH / 'static' / 'images' / self.downloadstub
             # Create directory if it doesn't exist
             images_path.mkdir(parents=True, exist_ok=True)
             
