@@ -11,15 +11,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Add project root to Python path
-sys.path.append(os.getenv('PROTOBLOG_PROJECT_ROOT'))
+PROJECT_ROOT = Path(os.getenv('PROJECT_ROOT'))
 
 # Configure logging
 from ai_agents.core.config import logger
 
 # Now we can import from ai_agents
 from ai_agents.core.config import BLOG_AGENT_TYPES, BLOG_AGENT_NAMES, PROJECT_ROOT, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT  
-
-project_root = Path(PROJECT_ROOT)  # Convert to Path object for use in the rest of the file
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -90,7 +88,7 @@ def run_midjourney():
     apple_script = f'''
     tell application "Terminal"
         activate
-        do script "cd {project_root} && python3 ai_agents/utils/midjourney_webhook_server.py"
+        do script "cd {PROJECT_ROOT} && python blogi/ai_agents/utils/midjourney_webhook_server.py"
     end tell
     '''
     

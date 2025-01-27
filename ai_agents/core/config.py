@@ -4,14 +4,12 @@ import sys
 from dotenv import load_dotenv
 import logging
 
-# Add project root to Python path
-PROJECT_ROOT = Path(os.getenv('PROTOBLOG_PROJECT_ROOT'))
-if not PROJECT_ROOT:
-    raise ValueError("PROTOBLOG_PROJECT_ROOT environment variable is not set")
-sys.path.append(str(PROJECT_ROOT))
-
 # Load environment variables
 load_dotenv()
+
+# Add project root to Python path
+PROJECT_ROOT = Path(os.getenv('PROJECT_ROOT'))
+AI_BLOG_SITE_PATH = Path(os.getenv('AI_BLOG_SITE_PATH'))
 
 # Agent Types
 BLOG_RESEARCHER_AI_AGENT = "blog_researcher_ai_agent"
@@ -22,8 +20,8 @@ BLOG_ARTIST_PROMPT_ARTIST = 'prompt_artist'
 BLOG_ARTIST_RANDOM_PROMPT_ARTIST = 'random_prompt_artist'
 
 # Paths
-POSTS_PATH = PROJECT_ROOT / "content" / "posts"
-PROMPTS_DIR = PROJECT_ROOT / "prompts"
+POSTS_PATH = AI_BLOG_SITE_PATH / "content" / "posts"
+PROMPTS_DIR = AI_BLOG_SITE_PATH / "prompts"
 
 # API Config
 CLAUDE_MODEL = "claude-3-haiku-20240307"

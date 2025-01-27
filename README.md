@@ -114,7 +114,7 @@ Note: NGROK will provide a URL like `https://abc123.ngrok.io` - use this as your
 3. In another terminal, start the Midjourney webhook server:
 ```bash
 cd ai_agents/helpers
-python3 midjourney_webhook_server.py
+python midjourney_webhook_server.py
 ```
 
 ### Testing the Setup
@@ -122,7 +122,7 @@ python3 midjourney_webhook_server.py
 Test the Midjourney webhook functionality:
 ```bash
 cd /PATH_TO_GIT_REPOS/protoblog/ai_agents/helpers
-python3 test_midjourney_webhook_server.py --webhook_url "https://your-ngrok-url" --image_url "https://placehold.co/2048x2048/png"
+python test_midjourney_webhook_server.py --webhook_url "https://your-ngrok-url" --image_url "https://placehold.co/2048x2048/png"
 ```
 
 ### Running AI Agents
@@ -147,12 +147,12 @@ ngrok http 9119
 Start Midjourney Webhook Flask Web Server & API (This server script also manages the downloading and the slicing of the images after it gets a callback from Midjourney)
 ```shell
 cd ai_agents/helpers
-python3 midjourney_webhook_server.py
+python midjourney_webhook_server.py
 ```
 
 Test Midjourney Webhook Python
 ```shell
-python3 test_midjourney_webhook_server.py --webhook_url "https://7e99-47-204-135-48.ngrok-free.app" --image_url "https://placehold.co/2048x2048/png"
+python test_midjourney_webhook_server.py --webhook_url "https://7e99-47-204-135-48.ngrok-free.app" --image_url "https://placehold.co/2048x2048/png"
 ```
 
 # Engineer
@@ -165,7 +165,7 @@ Topic Blog Poster w/Prompt - SHELL
 Topic Blog Poster w/Prompt - TESTING PYTHON
 ```shell
 cd ai_agents
-python3 blog_agent.py --agent_type "blog_researcher_ai_agent" --agent_name "researcher" --topic "Winter in Florida"
+python blog_agent.py --agent_type "blog_researcher_ai_agent" --agent_name "researcher" --topic "Winter in Florida"
 ```
 
 # Researcher
@@ -178,7 +178,7 @@ Topic Blog Poster w/ YOUR Topic - SHELL
 Topic Blog Poster w/ YOUR Topic - TESTING PYTHON
 ```shell
 cd ai_agents
-python3 blog_agent.py --agent_type "blog_researcher_ai_agent" --agent_name "researcher" --topic "Winter in Florida"
+python blog_agent.py --agent_type "blog_researcher_ai_agent" --agent_name "researcher" --topic "Winter in Florida"
 ```
 
 # Artist
@@ -186,12 +186,6 @@ python3 blog_agent.py --agent_type "blog_researcher_ai_agent" --agent_name "rese
 Image Blog Poster w/ YOUR Prompt - SHELL
 ```shell
 ./generate_image_post.sh --agent_type "blog_artist_ai_agent" --agent_name "artist" --image_prompt "Winter in Florida" --webhook_url "https://7e2b-47-204-135-48.ngrok-free.app"
-```
-
-Image Blog Poster w/ YOUR Prompt - TESTING PYTHON
-```shell
-cd ai_agents
-python3 blog_agent.py --agent_type "blog_artist_ai_agent" --agent_name "artist" --image_prompt "Winter in Florida" --webhook_url "https://7e2b-47-204-135-48.ngrok-free.app"
 ```
 
 Image Blog Poster Random Image Prompt - SHELL

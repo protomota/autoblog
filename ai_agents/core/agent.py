@@ -43,15 +43,15 @@ class BlogAgent:
         self._is_closed = False
         
         # Set up paths for templates and prompts
-        prompts_base = Path(PROJECT_ROOT) / "ai_agents" / "prompts"
+        prompts_base = Path(PROJECT_ROOT) / "blogi" / "ai_agents" / "prompts"
         agent_prompts = os.path.join(prompts_base, agent_name)
         common_prompts = os.path.join(prompts_base, "_common")
 
         # Set up paths
         self.agent_prompt_path = os.path.join(agent_prompts, "agent-prompt.txt")
-        self.enhanced_prompt_path = os.path.join(agent_prompts, "enhanced-prompt.txt")
+        self.enhanced_prompt_path = os.path.join(agent_prompts, "enhanced_prompt.txt")
         self.disclaimer_path = os.path.join(agent_prompts, "disclaimer.txt")
-        self.blog_page_template_path = os.path.join(agent_prompts, "blog-page-template.md")
+        self.blog_page_template_path = os.path.join(agent_prompts, "blog_page_template.md")
         
         # Base paths    
         self.base_prompts_path = Path(agent_prompts)
@@ -59,10 +59,10 @@ class BlogAgent:
         
         # Common templates
         self.frontmatter_path = os.path.join(common_prompts, "frontmatter.md")
-        self.tags_prompt_path = self.common_prompts_path / "tags-prompt.txt"
-        self.title_prompt_path = self.common_prompts_path / "summarize-for-title.txt"
-        self.five_words_prompt_path = self.common_prompts_path / "five-word-summary.txt"
-        self.summarize_content_path = self.common_prompts_path / "summarize-content.txt"
+        self.tags_prompt_path = self.common_prompts_path / "tags_prompt.txt"
+        self.title_prompt_path = self.common_prompts_path / "summarize_for_title.txt"
+        self.five_words_prompt_path = self.common_prompts_path / "five_word_summary.txt"
+        self.summarize_content_path = self.common_prompts_path / "summarize_content.txt"
         
         # Validate initialization
         self._validate_initialization()

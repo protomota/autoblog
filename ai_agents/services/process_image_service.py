@@ -19,8 +19,8 @@ class ProcessImageService:
                 parent_dir = os.path.dirname(current_dir)
 
                 # AI Agent prompts and templates
-                self.agent_prompt_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "agent-prompt.txt")
-                self.enhanced_prompt_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "enhanced-prompt.txt")
+                self.agent_prompt_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "agent_prompt.txt")
+                self.enhanced_prompt_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "enhanced_prompt.txt")
                 self.disclaimer_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "disclaimer.txt")
                 
                 self.image_prompt = image_prompt

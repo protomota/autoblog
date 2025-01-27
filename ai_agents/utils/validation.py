@@ -7,7 +7,7 @@ import os
 from ai_agents.core.config import logger
 
 def check_dependencies() -> bool:
-    required_commands = ['git', 'rsync', 'python3', 'hugo']
+    required_commands = ['git', 'rsync', 'python', 'hugo']
     for cmd in required_commands:
         if subprocess.run(['which', cmd], capture_output=True).returncode != 0:
             logging.error(f"Missing dependency: {cmd}")
@@ -21,12 +21,12 @@ def verify_paths(agent_name: str) -> bool:
         project_root = current_dir.parent.parent
 
         required_paths = {
-            'base_prompts': project_root / "ai_agents" / "prompts" / agent_name,
-            'agent_prompt': project_root / "ai_agents" / "prompts" / agent_name / "agent-prompt.txt",
-            'enhanced_prompt': project_root / "ai_agents" / "prompts" / agent_name / "enhanced-prompt.txt",
-            'disclaimer': project_root / "ai_agents" / "prompts" / agent_name / "disclaimer.txt",
-            'five_words_prompt': project_root / "ai_agents" / "prompts" / "_common" / "five-word-summary.txt",
-            'summarize_content': project_root / "ai_agents" / "prompts" / "_common" / "summarize-content.txt"
+            'base_prompts': project_root / "blogi" / "ai_agents" / "prompts" / agent_name,
+            'agent_prompt': project_root / "blogi" / "ai_agents" / "prompts" / agent_name / "agent_prompt.txt",
+            'enhanced_prompt': project_root / "blogi" / "ai_agents" / "prompts" / agent_name / "enhanced_prompt.txt",
+            'disclaimer': project_root / "blogi" / "ai_agents" / "prompts" / agent_name / "disclaimer.txt",
+            'five_words_prompt': project_root / "blogi" / "ai_agents" / "prompts" / "_common" / "five_word_summary.txt",
+            'summarize_content': project_root / "blogi" / "ai_agents" / "prompts" / "_common" / "summarize_content.txt"
         }
         
         for name, path in required_paths.items():

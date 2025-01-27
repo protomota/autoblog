@@ -7,9 +7,6 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-# Add project root to Python path
-sys.path.append(os.getenv('PROTOBLOG_PROJECT_ROOT'))
-
 # Use absolute imports consistently
 from ai_agents.core.config import (
     BLOG_RESEARCHER_AI_AGENT,
