@@ -28,7 +28,6 @@ logger = setup_logging()
 
 class DeployManager:
     def __init__(self):
-        self.project_root = Path(os.getenv('HUMAN_BLOG_PROJECT_ROOT'))
         self.human_blog_url = os.getenv('HUMAN_BLOG_URL')
         self.obsidian_notes_path = Path(os.getenv('OBSIDIAN_NOTES_PATH'))
         self.human_blog_site_path = Path(os.getenv('HUMAN_BLOG_SITE_PATH'))
@@ -168,7 +167,7 @@ class DeployManager:
                     self.logger.info(f"Checking image: {image}")
 
                     new_image_name = image.replace(' ', '_')
-                    dest_image = self.project_root / 'static' / 'images' / new_image_name
+                    dest_image = self.human_blog_site_path / 'static' / 'images' / new_image_name
                     self.logger.info(f"  - {source_file.name} (checking image: {image})")
                     if not dest_image.exists():
                         missing_images = True
@@ -250,7 +249,7 @@ class DeployManager:
 
     def build_hugo(self) -> bool:
         """Build Hugo site."""
-        success, output = self.run_command(['hugo'], cwd=self.project_root)
+        success, output = self.run_command(['hugo'], cwd=self.human_blog_site_path)
         if not success:
             self.logger.error(f"Hugo build failed: {output}")
         return success
@@ -259,19 +258,19 @@ class DeployManager:
         """Handle all git operations."""
         try:
             # Add all changes
-            self.run_command(['git', 'add', '.'], cwd=self.project_root)
+            self.run_command(['git', 'add', '.'], cwd=self.human_blog_site_path)
             
             # Check for changes
             result = subprocess.run(['git', 'diff', '--cached', '--quiet'], 
-                                 cwd=self.project_root, 
+                                 cwd=self.human_blog_site_path, 
                                  capture_output=True)
             
             if result.returncode == 1:  # Changes exist
                 commit_message = f"New Blog Post on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                self.run_command(['git', 'commit', '-m', commit_message], cwd=self.project_root)
+                self.run_command(['git', 'commit', '-m', commit_message], cwd=self.human_blog_site_path)
                 
                 # Push to main
-                self.run_command(['git', 'push', 'origin', 'main'], cwd=self.project_root)
+                self.run_command(['git', 'push', 'origin', 'main'], cwd=self.human_blog_site_path)
                 
                 # Handle hostinger branch
                 self.handle_hostinger_deployment()
@@ -286,20 +285,20 @@ class DeployManager:
         try:
             # Remove existing hostinger-deploy branch if it exists
             subprocess.run(['git', 'branch', '-D', 'hostinger-deploy'], 
-                         cwd=self.project_root,
+                         cwd=self.human_blog_site_path,
                          stderr=subprocess.DEVNULL)
             
             # Create new hostinger-deploy branch
             self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'hostinger-deploy'],
-                           cwd=self.project_root)
+                           cwd=self.human_blog_site_path)
             
             # Force push to hostinger
             self.run_command(['git', 'push', 'origin', 'hostinger-deploy:hostinger-humanblog', '--force'],
-                           cwd=self.project_root)
+                           cwd=self.human_blog_site_path)
             
             # Cleanup
             self.run_command(['git', 'branch', '-D', 'hostinger-deploy'],
-                           cwd=self.project_root)
+                           cwd=self.human_blog_site_path)
             
             return True
         except Exception as e:
