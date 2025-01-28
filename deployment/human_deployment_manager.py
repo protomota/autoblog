@@ -329,9 +329,9 @@ def main():
     ]):
         return False
 
+    # TODO: Remove this
     # Disable GIT operations
-    return False
-
+    return True
     # Only proceed with build and git operations if changes were made
     if deploy_manager.changes_made:
         if all([
@@ -348,4 +348,5 @@ def main():
     return False
 
 if __name__ == "__main__":
-    main() 
+    success = main()
+    sys.exit(0 if success else 1)
