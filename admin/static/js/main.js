@@ -11,6 +11,14 @@ const displayNames = {
     'random_prompt_artist': 'Random Prompt Artist (Let the AI Dream an Image Prompt)'
 };
 
+// Add agent type mappings
+const agentTypeMapping = {
+    'topic_researcher': 'blog_researcher_ai_agent',
+    'topic_engineer': 'blog_researcher_ai_agent',
+    'prompt_artist': 'blog_artist_ai_agent',
+    'random_prompt_artist': 'blog_artist_ai_agent'
+};
+
 function runMidjourneyServer() {
     fetch('/run-midjourney', {
         method: 'POST',
@@ -152,6 +160,14 @@ async function startServer(command) {
     }
 }
 
+// Add a function to append log messages
+function appendToConsole(consoleLog, message, className = '') {
+    const timestamp = new Date().toLocaleTimeString();
+    consoleLog.innerHTML += `<pre class="${className}">[${timestamp}] ${message}</pre>`;
+    // Auto-scroll to bottom
+    consoleLog.scrollTop = consoleLog.scrollHeight;
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners
@@ -179,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const generateButton = document.getElementById('generateButton');
         const buttonText = document.getElementById('buttonText');
         const buttonSpinner = document.getElementById('buttonSpinner');
+        const consoleLog = document.getElementById('console-log');
         
         // Disable button and show loading state
         generateButton.disabled = true;
@@ -191,21 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('blog-url').href = '';
         document.getElementById('blog-url').textContent = '';
         
-        const formData = {
-            agent_type: document.getElementById('agent_type').value,
-            agent_name: document.getElementById('agent_name').value
-        };
-        
-        const agent_type = formData.agent_type;
-        const agent_name = formData.agent_name;
+        // Initialize console
+        consoleLog.innerHTML = '';
+        appendToConsole(consoleLog, 'Starting post generation...');
+
+        const agent_name = document.getElementById('agent_name').value;
+        // Map the agent type to the correct backend value
+        const agent_type = agentTypeMapping[agent_name] || agent_name;
         const topic = document.getElementById('topic').value;
         const image_prompt = document.getElementById('image_prompt').value;
         const webhook_url = document.getElementById('webhook_url').value;
 
-        // Clear previous output
-        document.getElementById('console-log').innerHTML = '<pre>Executing command...</pre>';
-
         try {
+            appendToConsole(consoleLog, `Agent Type: ${agent_type}`);
+            appendToConsole(consoleLog, `Agent Name: ${agent_name}`);
+            
             // Log the request data for debugging
             console.log('Sending request with data:', {
                 agent_type,
@@ -241,42 +258,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const response = await fetch('/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const data = await response.json();
+            appendToConsole(consoleLog, 'Sending request to server...');
             
-            if (data.success) {
-                const consoleLog = document.getElementById('console-log');
-                consoleLog.innerHTML = `<pre class="success">${data.message}</pre>`;
-                
-                // Handle blog URL
-                if (data.blog_url) {
-                    const urlLink = document.getElementById('blog-url');
-                    urlLink.href = data.blog_url;
-                    urlLink.textContent = data.blog_url;
-                    urlContainer.classList.remove('hidden');
+            // Add timeout to the fetch request
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeout);
+
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
                 }
-            } else {
-                // Enhanced error logging with more details
-                console.error('Server returned error:', data);
-                const errorMessage = data.message || 'Unknown server error';
-                const details = data.details || '';
-                const fullError = `${errorMessage}${details ? '\n\nDetails:\n' + details : ''}`;
-                throw new Error(fullError);
+
+                appendToConsole(consoleLog, 'Response received from server...');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message with any additional information
+                    let successMessage = data.message || 'Post generated successfully!';
+                    if (data.details) {
+                        successMessage += '\n\nDetails:\n' + data.details;
+                    }
+                    appendToConsole(consoleLog, successMessage, 'success');
+                    
+                    // Handle blog URL
+                    if (data.blog_url) {
+                        const urlLink = document.getElementById('blog-url');
+                        urlLink.href = data.blog_url;
+                        urlLink.textContent = data.blog_url;
+                        urlContainer.classList.remove('hidden');
+                        appendToConsole(consoleLog, `Blog URL generated: ${data.blog_url}`);
+                    }
+                } else {
+                    throw new Error(data.message || 'Unknown server error');
+                }
+            } catch (fetchError) {
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Request timed out after 5 minutes. Please try again.');
+                }
+                throw fetchError;
             }
         } catch (error) {
-            console.error('Full error:', error);
-            const consoleLog = document.getElementById('console-log');
-            consoleLog.innerHTML = `<pre class="error">Error: ${error.message}</pre>`;
+            console.error('Error during post generation:', error);
+            const errorMessage = error.message || 'An unexpected error occurred';
+            appendToConsole(consoleLog, `Error: ${errorMessage}`, 'error');
             
-            // Add alert for critical errors
-            if (error.message.includes('Deployment failed')) {
+            if (errorMessage.includes('Deployment failed')) {
                 alert('Deployment failed. Please check the console log for more details and ensure all required servers are running.');
             }
         } finally {
