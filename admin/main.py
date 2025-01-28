@@ -19,8 +19,7 @@ import shlex
 from blogi.core.config import logger
 from blogi.core.config import (
     BLOG_AGENT_TYPES, 
-    BLOG_AGENT_NAMES, 
-    BLOGI_ROOT, 
+    BLOG_AGENT_NAMES,
     BLOG_RESEARCHER_AI_AGENT, 
     BLOG_ARTIST_AI_AGENT
 )
@@ -94,7 +93,7 @@ def run_midjourney():
     apple_script = f'''
     tell application "Terminal"
         activate
-        do script "source {PROJECT_ROOT}/venv/bin/activate && python {BLOGI_ROOT}/midjourney_webhook_server.py"
+        do script "source {PROJECT_ROOT}/venv/bin/activate && python {PROJECT_ROOT}/blogi/utils/midjourney_webhook_server.py"
     end tell
     '''
     
