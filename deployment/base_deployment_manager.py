@@ -20,27 +20,17 @@ class BaseDeployManager:
         self.blog_url_base = None
         self.post_file_path = None
 
-    def run_command(self, command: list) -> tuple[bool, str]:
-        """Run a shell command and return success status and output."""
-        try:
-            self.logger.info(f"Running command: {' '.join(command)}")
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True
-            )
-            if result.stderr:
-                self.logger.warning(f"Command stderr: {result.stderr}")
-            return True, result.stdout
-        except subprocess.CalledProcessError as e:
-            error_msg = f"Command failed with exit code {e.returncode}:\nstdout: {e.stdout}\nstderr: {e.stderr}"
-            self.logger.error(error_msg)
-            return False, error_msg
-        except Exception as e:
-            error_msg = f"Error executing command: {str(e)}"
-            self.logger.error(error_msg)
-            return False, error_msg
-
+    def run_command(self, command: str, cwd: str = None) -> tuple[int, str, str]:
+        """Run a shell command and return the exit code, stdout, and stderr"""
+        process = subprocess.Popen(
+            command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=cwd
+        )
+        stdout, stderr = process.communicate()
+        return process.returncode, stdout.decode(), stderr.decode()
     def build_hugo(self, site_path: Path) -> bool:
         """Build Hugo site."""
         success, output = self.run_command(['hugo'], cwd=site_path)
