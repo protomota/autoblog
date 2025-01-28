@@ -14,7 +14,7 @@ from blogi.services.brave_search_service import BraveSearchClient
 from blogi.core.web_service import WebService
 from blogi.generators.artist_post import ArtistPostGenerator
 from blogi.generators.researcher_post import ResearcherPostGenerator
-from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH
+from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH, PROMPTS_DIR
 
 # Configure logging
 from blogi.core.config import logger
@@ -41,7 +41,7 @@ class BlogAgent:
         self._is_closed = False
         
         # Set up paths for templates and prompts
-        prompts_base = PROJECT_ROOT / "prompts"
+        prompts_base = PROMPTS_DIR
         agent_prompts = os.path.join(prompts_base, agent_name)
         common_prompts = os.path.join(prompts_base, "_common")
 
