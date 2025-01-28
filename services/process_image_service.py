@@ -1,27 +1,23 @@
 from datetime import datetime
 from typing import Optional
 import os
-import logging
 from pathlib import Path
 
 from blogi.services.midjourney_image_service import MidjourneyImageService
 
 # Configure logging
-from blogi.core.config import logger
+from blogi.core.config import logger, PROMPTS_DIR, AI_BLOG_SITE_STATIC_IMAGES_PATH
 
 class ProcessImageService:
 
     def __init__(self, agent_name: str, image_prompt: str, webhook_url: str):
             try:
                 self.webhook_url = webhook_url
-                current_dir = os.path.dirname(os.path.abspath(__file__))
-
-                parent_dir = os.path.dirname(current_dir)
 
                 # AI Agent prompts and templates
-                self.agent_prompt_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "agent_prompt.txt")
-                self.enhanced_prompt_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "enhanced_prompt.txt")
-                self.disclaimer_path = os.path.join(parent_dir, f"prompts/{agent_name}/", "disclaimer.txt")
+                self.agent_prompt_path = PROMPTS_DIR / agent_name / "agent_prompt.txt"
+                self.enhanced_prompt_path = PROMPTS_DIR / agent_name / "enhanced_prompt.txt"
+                self.disclaimer_path = PROMPTS_DIR / agent_name / "disclaimer.txt"
                 
                 self.image_prompt = image_prompt
 
@@ -34,15 +30,6 @@ class ProcessImageService:
             except Exception as e:
                 logger.error(f"ProcessImageService initialization error: {str(e)}")
                 raise
-
-    def generate_images(self, prompt: str) -> dict:
-        image_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        return {
-            'top_left': f"ai_posts/images/{image_timestamp}_top_left.png",
-            'top_right': f"ai_posts/images/{image_timestamp}_top_right.png",
-            'bottom_left': f"ai_posts/images/{image_timestamp}_bottom_left.png",
-            'bottom_right': f"ai_posts/images/{image_timestamp}_bottom_right.png"
-        }
 
     def _get_image_and_description(self):
         try:
