@@ -81,8 +81,8 @@ def main(agent_type: str, agent_name: str, **kwargs):
     """Main entry point for deployment process."""
     deploy_manager = AIDeployManager()
     
-    # Run the AI agent
-    python_script = deploy_manager.project_root / 'agent' / 'main.py'
+    # Fix: Use correct path to main.py
+    python_script = PROJECT_ROOT / 'blogi' / 'agent' / 'main.py'  # Changed from project_root/agent to project_root/blogi/agent
     cmd = [sys.executable, str(python_script), '--agent_type', agent_type, '--agent_name', agent_name]
     
     # Add additional arguments based on agent type
