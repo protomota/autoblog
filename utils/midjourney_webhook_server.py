@@ -37,7 +37,7 @@ class MidjourneyWebhookHandler:
         ).hexdigest()
         return hmac.compare_digest(expected_signature, signature)
 
-    def slice_and_save_images(self, image_path, output_folder, current_image_timestamp):
+    def slice_and_save_images(self, image_path, output_folder, image_timestamp):
         """Slices a 2048x2048 image into four 1024x1024 images and saves them."""
         try:
             img = Image.open(image_path)
@@ -61,7 +61,7 @@ class MidjourneyWebhookHandler:
                 
                 # Save both dated and normal versions
                 for filename in [
-                    f"{base_name}_{current_image_timestamp}_{position}.png",
+                    f"{base_name}_{image_timestamp}_{position}.png",
                     f"{base_name}_{position}.png"
                 ]:
                     output_path = Path(output_folder) / filename
@@ -95,38 +95,25 @@ class MidjourneyWebhookHandler:
             logger.error(f"Failed to download image: {e}")
             raise
 
-    def read_timestamp_from_file(self):
-        """Read the current timestamp from file."""
-        timestamp_path = PROJECT_ROOT / 'tmp' / 'current_image_timestamp.txt'
-        try:
-            timestamp = timestamp_path.read_text().strip()
-            logger.info(f"Read timestamp from file: {timestamp}")
-            return timestamp
-        except FileNotFoundError:
-            logger.error(f"Timestamp file not found at {timestamp_path}")
-            return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        except Exception as e:
-            logger.error(f"Error reading timestamp file: {e}")
-            return datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-
     def save_image_and_prompt(self, image_url, prompt):
         """Process and save the image and prompt."""
         try:
-            current_image_timestamp = self.read_timestamp_from_file()
+
+            image_timestamp = os.getenv('IMAGE_TIMESTAMP')
             images_path = AI_BLOG_SITE_PATH / 'static' / 'images' / self.downloadstub
             # Create directory if it doesn't exist
             images_path.mkdir(parents=True, exist_ok=True)
             
             # Create paths for image and prompt
-            dated_image_path = images_path / f"{self.downloadstub}_{current_image_timestamp}.png"
-            dated_prompt_path = images_path / f"{self.downloadstub}_{current_image_timestamp}.md"
+            dated_image_path = images_path / f"{self.downloadstub}_{image_timestamp}.png"
+            dated_prompt_path = images_path / f"{self.downloadstub}_{image_timestamp}.md"
             
             # Save prompt and download image
             self.save_prompt_to_file(prompt, dated_prompt_path)
             self.download_image(image_url, dated_image_path)
             
             # Slice the image into quadrants
-            self.slice_and_save_images(dated_image_path, images_path, current_image_timestamp)
+            self.slice_and_save_images(dated_image_path, images_path, image_timestamp)
             
             # Run deployment process
             self.deploy_manager.build_hugo()

@@ -54,22 +54,16 @@ class ArtistPostGenerator:
             return None, None, None
 
     async def _generate_images(self) -> Dict[str, str]:
-        current_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        await self._save_timestamp(current_timestamp)
+        image_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        os.environ['IMAGE_TIMESTAMP'] = image_timestamp
         
         return {
-            'top_left': f"/images/openmid/openmid_{current_timestamp}_top_left.png",
-            'top_right': f"/images/openmid/openmid_{current_timestamp}_top_right.png",
-            'bottom_left': f"/images/openmid/openmid_{current_timestamp}_bottom_left.png",
-            'bottom_right': f"/images/openmid/openmid_{current_timestamp}_bottom_right.png"
+            'top_left': f"/images/openmid/openmid_{image_timestamp}_top_left.png",
+            'top_right': f"/images/openmid/openmid_{image_timestamp}_top_right.png",
+            'bottom_left': f"/images/openmid/openmid_{image_timestamp}_bottom_left.png",
+            'bottom_right': f"/images/openmid/openmid_{image_timestamp}_bottom_right.png"
         }
-
-    async def _save_timestamp(self, timestamp: str):
-        temp_dir = PROJECT_ROOT / "tmp"
-        temp_dir.mkdir(parents=True, exist_ok=True)
-        timestamp_file = temp_dir / "current_image_timestamp.txt"
-        timestamp_file.write_text(timestamp)
-
+    
     def _create_gallery_code(self, image_paths: Dict[str, str]) -> str:
         return "{{< gallery images=\"" + ",".join(image_paths.values()) + "\" >}}"
 
