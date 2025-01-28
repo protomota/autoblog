@@ -21,13 +21,8 @@ class BaseDeployManager:
         self.post_file_path = None
 
     def run_command(self, command: list) -> tuple[bool, str]:
+        """Run a shell command and return success status and output."""
         try:
-            # Fix the path to main.py
-            script_path = PROJECT_ROOT / "blogi" / "agent" / "main.py"
-            
-            # Construct command with correct path
-            command[command.index("main.py")] = str(script_path)
-            
             self.logger.info(f"Running command: {' '.join(command)}")
             result = subprocess.run(
                 command,
