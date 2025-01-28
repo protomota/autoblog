@@ -94,7 +94,7 @@ def run_midjourney():
     apple_script = f'''
     tell application "Terminal"
         activate
-        do script "source {PROJECT_ROOT}/venv/bin/activate && python {BLOGI_ROOT}/utils/midjourney_webhook_server.py"
+        do script "source {PROJECT_ROOT}/venv/bin/activate && python {BLOGI_ROOT}/midjourney_webhook_server.py"
     end tell
     '''
     
