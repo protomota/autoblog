@@ -5,6 +5,7 @@ import logging
 import datetime
 from pathlib import Path
 from typing import Optional, Tuple
+from blogi.core.config import PROJECT_ROOT
 
 class BaseDeployManager:
     def __init__(self):
@@ -19,17 +20,19 @@ class BaseDeployManager:
         self.blog_url_base = None
         self.post_file_path = None
 
-    def run_command(self, cmd: list, cwd: Optional[Path] = None) -> Tuple[bool, str]:
-        """Run a shell command and return success status and output."""
+    def run_command(self, command: list) -> tuple[bool, str]:
         try:
-            self.logger.info(f"Running command: {' '.join(cmd)}")
+            # Fix the path to main.py
+            script_path = PROJECT_ROOT / "blogi" / "agent" / "main.py"
+            
+            # Construct command with correct path
+            command[command.index("main.py")] = str(script_path)
+            
+            self.logger.info(f"Running command: {' '.join(command)}")
             result = subprocess.run(
-                cmd,
-                cwd=str(cwd) if cwd else None,
+                command,
                 capture_output=True,
-                text=True,
-                check=True,
-                env=os.environ.copy()
+                text=True
             )
             if result.stderr:
                 self.logger.warning(f"Command stderr: {result.stderr}")

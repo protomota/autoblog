@@ -8,7 +8,7 @@ import logging
 load_dotenv()
 
 # Setup Source Paths
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent.parent  # Go up one more level to reach protomota root
 
 # Add to Python path
 sys.path.append(str(PROJECT_ROOT))
@@ -33,7 +33,7 @@ AI_BLOG_SITE_PATH = PROJECT_ROOT / "ai_blog" if AI_BLOG_URL else None
 AI_BLOG_SITE_STATIC_IMAGES_PATH = AI_BLOG_SITE_PATH / "static" / "images" if AI_BLOG_SITE_PATH else None
 AI_POSTS_PATH = AI_BLOG_SITE_PATH / "content" / "posts" if AI_BLOG_SITE_PATH else None
 # Fix the PROMPTS_DIR path - remove duplicate blogi
-PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts" if AI_BLOG_SITE_PATH else None
+PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts" if AI_BLOG_URL else None
 
 HUMAN_BLOG_SITE_PATH = PROJECT_ROOT / "human_blog"
 HUMAN_BLOG_SITE_STATIC_IMAGES_PATH = HUMAN_BLOG_SITE_PATH / "static" / "images"
