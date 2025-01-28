@@ -139,7 +139,7 @@ def main(agent_type: str, agent_name: str, **kwargs):
     deploy_manager = AIDeployManager()
     
     # Run the AI agent
-    python_script = deploy_manager.project_root / 'blogi' / 'ai_agents' / 'main.py'
+    python_script = deploy_manager.project_root / 'agent' / 'main.py'
     cmd = [sys.executable, str(python_script), '--agent_type', agent_type, '--agent_name', agent_name]
     
     # Add additional arguments based on agent type
@@ -173,6 +173,10 @@ def main(agent_type: str, agent_name: str, **kwargs):
         deploy_manager.logger.error(error_msg)
         return False, error_msg
     
+
+    # Disable GIT operations
+    return False
+
     # Run deployment steps
     if not deploy_manager.build_hugo():
         return False, "Hugo build failed"

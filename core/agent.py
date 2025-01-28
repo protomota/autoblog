@@ -41,7 +41,7 @@ class BlogAgent:
         self._is_closed = False
         
         # Set up paths for templates and prompts
-        prompts_base = PROJECT_ROOT / "blogi" / "ai_agents" / "prompts"
+        prompts_base = PROJECT_ROOT / "blogi" / "prompts"
         agent_prompts = os.path.join(prompts_base, agent_name)
         common_prompts = os.path.join(prompts_base, "_common")
 

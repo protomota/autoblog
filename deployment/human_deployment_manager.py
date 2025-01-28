@@ -329,6 +329,9 @@ def main():
     ]):
         return False
 
+    # Disable GIT operations
+    return False
+
     # Only proceed with build and git operations if changes were made
     if deploy_manager.changes_made:
         if all([

@@ -24,7 +24,6 @@ logger = setup_logging()
 
 class MidjourneyWebhookHandler:
     def __init__(self):
-        self.downloadstub = "openmid"
         self.deploy_manager = AIDeployManager()
         self.processed_urls = set()  # Add cache for processed URLs
 
@@ -100,13 +99,13 @@ class MidjourneyWebhookHandler:
         try:
 
             image_timestamp = os.getenv('IMAGE_TIMESTAMP')
-            images_path = AI_BLOG_SITE_PATH / 'static' / 'images' / self.downloadstub
+            images_path = AI_BLOG_SITE_PATH / 'static' / 'images'
             # Create directory if it doesn't exist
             images_path.mkdir(parents=True, exist_ok=True)
             
             # Create paths for image and prompt
-            dated_image_path = images_path / f"{self.downloadstub}_{image_timestamp}.png"
-            dated_prompt_path = images_path / f"{self.downloadstub}_{image_timestamp}.md"
+            dated_image_path = images_path / f"{image_timestamp}.png"
+            dated_prompt_path = images_path / f"{image_timestamp}.md"
             
             # Save prompt and download image
             self.save_prompt_to_file(prompt, dated_prompt_path)

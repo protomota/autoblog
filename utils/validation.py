@@ -21,12 +21,12 @@ def verify_paths(agent_name: str) -> bool:
         project_root = current_dir.parent.parent
 
         required_paths = {
-            'base_prompts': project_root / "blogi" / "ai_agents" / "prompts" / agent_name,
-            'agent_prompt': project_root / "blogi" / "ai_agents" / "prompts" / agent_name / "agent_prompt.txt",
-            'enhanced_prompt': project_root / "blogi" / "ai_agents" / "prompts" / agent_name / "enhanced_prompt.txt",
-            'disclaimer': project_root / "blogi" / "ai_agents" / "prompts" / agent_name / "disclaimer.txt",
-            'five_words_prompt': project_root / "blogi" / "ai_agents" / "prompts" / "_common" / "five_word_summary.txt",
-            'summarize_content': project_root / "blogi" / "ai_agents" / "prompts" / "_common" / "summarize_content.txt"
+            'base_prompts': project_root / "blogi" / "prompts" / agent_name,
+            'agent_prompt': project_root / "blogi" / "prompts" / agent_name / "agent_prompt.txt",
+            'enhanced_prompt': project_root / "blogi" / "prompts" / agent_name / "enhanced_prompt.txt",
+            'disclaimer': project_root / "blogi" / "prompts" / agent_name / "disclaimer.txt",
+            'five_words_prompt': project_root / "blogi" / "prompts" / "_common" / "five_word_summary.txt",
+            'summarize_content': project_root / "blogi" / "prompts" / "_common" / "summarize_content.txt"
         }
         
         for name, path in required_paths.items():

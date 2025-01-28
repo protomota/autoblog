@@ -36,12 +36,12 @@ class ProcessImageService:
                 raise
 
     def generate_images(self, prompt: str) -> dict:
-        current_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        image_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         return {
-            'top_left': f"/images/openmid/openmid_{current_timestamp}_top_left.png",
-            'top_right': f"/images/openmid/openmid_{current_timestamp}_top_right.png",
-            'bottom_left': f"/images/openmid/openmid_{current_timestamp}_bottom_left.png",
-            'bottom_right': f"/images/openmid/openmid_{current_timestamp}_bottom_right.png"
+            'top_left': f"ai_posts/images/{image_timestamp}_top_left.png",
+            'top_right': f"ai_posts/images/{image_timestamp}_top_right.png",
+            'bottom_left': f"ai_posts/images/{image_timestamp}_bottom_left.png",
+            'bottom_right': f"ai_posts/images/{image_timestamp}_bottom_right.png"
         }
 
     def _get_image_and_description(self):

@@ -8,8 +8,7 @@ def ensure_directory_structure() -> bool:
     try:
         required_dirs = {
             'content': Path("content"),
-            'ai_agents': Path("ai_agents"),
-            'helpers': Path("helpers"),
+            'utils': Path("utils"),
             'prompts': Path("prompts")
         }
         

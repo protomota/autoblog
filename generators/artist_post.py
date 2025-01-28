@@ -58,10 +58,10 @@ class ArtistPostGenerator:
         os.environ['IMAGE_TIMESTAMP'] = image_timestamp
         
         return {
-            'top_left': f"/images/openmid/openmid_{image_timestamp}_top_left.png",
-            'top_right': f"/images/openmid/openmid_{image_timestamp}_top_right.png",
-            'bottom_left': f"/images/openmid/openmid_{image_timestamp}_bottom_left.png",
-            'bottom_right': f"/images/openmid/openmid_{image_timestamp}_bottom_right.png"
+            'top_left': f"images/{image_timestamp}_top_left.png",
+            'top_right': f"images/{image_timestamp}_top_right.png",
+            'bottom_left': f"images/{image_timestamp}_bottom_left.png",
+            'bottom_right': f"images/{image_timestamp}_bottom_right.png"
         }
     
     def _create_gallery_code(self, image_paths: Dict[str, str]) -> str:
