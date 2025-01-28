@@ -16,7 +16,7 @@ from PIL import Image
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
-from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_PATH, OBSIDIAN_NOTES_PATH
+from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_PATH, AI_BLOG_SITE_STATIC_IMAGES_PATH, OBSIDIAN_NOTES_PATH, OBSIDIAN_AI_IMAGES_PATH
 from blogi.deployment.ai_deployment_manager import AIDeployManager
 
 app = Flask(__name__)
@@ -38,8 +38,6 @@ class MidjourneyWebhookHandler:
 
     def slice_and_save_images(self,
                               dated_ai_image_path,
-                              ai_blog_site_images_path,
-                              obsidian_ai_images_path,
                               image_timestamp):
         
         """Slices a 2048x2048 image into four 1024x1024 images and saves them."""
@@ -68,8 +66,8 @@ class MidjourneyWebhookHandler:
                     f"{base_name}_{image_timestamp}_{position}.png",
                     f"{base_name}_{position}.png"
                 ]:
-                    ai_output_path = Path(ai_blog_site_images_path) / filename
-                    obsidian_output_path = Path(obsidian_ai_images_path) / filename
+                    ai_output_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / filename
+                    obsidian_output_path = OBSIDIAN_AI_IMAGES_PATH / filename
                     try:
                         quadrant.save(ai_output_path)
                         quadrant.save(obsidian_output_path)
@@ -108,17 +106,14 @@ class MidjourneyWebhookHandler:
         try:
 
             image_timestamp = os.getenv('IMAGE_TIMESTAMP')
-            ai_blog_site_images_path = AI_BLOG_SITE_PATH / 'static' / 'images'
             # Create directory if it doesn't exist
-            ai_blog_site_images_path.mkdir(parents=True, exist_ok=True)
-
-            obsidian_ai_images_path = OBSIDIAN_NOTES_PATH / 'ai_blog' / 'images'
-            
+            AI_BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+            OBSIDIAN_AI_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
             # Create paths for image and prompt
-            dated_ai_image_path = ai_blog_site_images_path / f"{image_timestamp}.png"
-            dated_ai_prompt_path = ai_blog_site_images_path / f"{image_timestamp}.md"
-            dated_obsidian_image_path = obsidian_ai_images_path / f"{image_timestamp}.png"
-            dated_obsidian_prompt_path = obsidian_ai_images_path / f"{image_timestamp}.md"
+            dated_ai_image_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.png"
+            dated_ai_prompt_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.md"
+            dated_obsidian_image_path = OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.png"
+            dated_obsidian_prompt_path = OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.md"
             
             # Save prompt and download image
             self.save_prompt_to_file(prompt, dated_ai_prompt_path)
@@ -127,8 +122,6 @@ class MidjourneyWebhookHandler:
             self.download_image(image_url, dated_obsidian_image_path)
             # Slice the image into quadrants
             self.slice_and_save_images(dated_ai_image_path,
-                                       ai_blog_site_images_path,
-                                       obsidian_ai_images_path,
                                        image_timestamp)
             # Run deployment process
             self.deploy_manager.build_hugo()

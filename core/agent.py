@@ -14,7 +14,7 @@ from blogi.services.brave_search_service import BraveSearchClient
 from blogi.core.web_service import WebService
 from blogi.generators.artist_post import ArtistPostGenerator
 from blogi.generators.researcher_post import ResearcherPostGenerator
-from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH, OBSIDIAN_AI_IMAGES_PATH
+from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH
 
 # Configure logging
 from blogi.core.config import logger
@@ -222,6 +222,7 @@ class BlogAgent:
         try:
             AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
             OBSIDIAN_AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
+            
             ai_posts_filepath = AI_POSTS_PATH / filename
             obsidian_ai_posts_filepath = OBSIDIAN_AI_POSTS_PATH / filename
             async with aiofiles.open(ai_posts_filepath, mode='w') as file:
@@ -230,6 +231,7 @@ class BlogAgent:
                 await file.write(content)
             
             logger.info(f"Successfully saved to {ai_posts_filepath}")
+            logger.info(f"Successfully saved to {obsidian_ai_posts_filepath}")
             # Output the file path in the format expected by deploy_manager
             print(f"FILE_PATH={ai_posts_filepath}")
             return str(ai_posts_filepath)
