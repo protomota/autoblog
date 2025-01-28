@@ -14,7 +14,7 @@ from blogi.services.brave_search_service import BraveSearchClient
 from blogi.core.web_service import WebService
 from blogi.generators.artist_post import ArtistPostGenerator
 from blogi.generators.researcher_post import ResearcherPostGenerator
-from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH
+from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH, OBSIDIAN_AI_IMAGES_PATH
 
 # Configure logging
 from blogi.core.config import logger
@@ -41,7 +41,7 @@ class BlogAgent:
         self._is_closed = False
         
         # Set up paths for templates and prompts
-        prompts_base = PROJECT_ROOT / "blogi" / "prompts"
+        prompts_base = PROJECT_ROOT / "prompts"
         agent_prompts = os.path.join(prompts_base, agent_name)
         common_prompts = os.path.join(prompts_base, "_common")
 
@@ -221,15 +221,18 @@ class BlogAgent:
         """Save content to an Post."""
         try:
             AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
-            filepath = AI_POSTS_PATH / filename
-            
-            async with aiofiles.open(filepath, mode='w') as file:
+            OBSIDIAN_AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
+            ai_posts_filepath = AI_POSTS_PATH / filename
+            obsidian_ai_posts_filepath = OBSIDIAN_AI_POSTS_PATH / filename
+            async with aiofiles.open(ai_posts_filepath, mode='w') as file:
+                await file.write(content)
+            async with aiofiles.open(obsidian_ai_posts_filepath, mode='w') as file:
                 await file.write(content)
             
-            logger.info(f"Successfully saved to {filepath}")
+            logger.info(f"Successfully saved to {ai_posts_filepath}")
             # Output the file path in the format expected by deploy_manager
-            print(f"FILE_PATH={filepath}")
-            return str(filepath)
+            print(f"FILE_PATH={ai_posts_filepath}")
+            return str(ai_posts_filepath)
         except Exception as e:
             logger.error(f"Error saving to Posts: {str(e)}")
             return None
