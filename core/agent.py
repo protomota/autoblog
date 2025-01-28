@@ -233,7 +233,7 @@ class BlogAgent:
             logger.info(f"Successfully saved to {ai_posts_filepath}")
             logger.info(f"Successfully saved to {obsidian_ai_posts_filepath}")
             # Output the file path in the format expected by deploy_manager
-            print(f"FILE_PATH={ai_posts_filepath}")
+            print(f"POST_FILE_PATH={ai_posts_filepath}")
             return str(ai_posts_filepath)
         except Exception as e:
             logger.error(f"Error saving to Posts: {str(e)}")

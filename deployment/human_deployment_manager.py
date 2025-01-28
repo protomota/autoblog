@@ -41,57 +41,18 @@ def setup_logging():
 # Create logger instance
 logger = setup_logging()
 
-class DeployManager:
+from .base_deployment_manager import BaseDeployManager
+
+class HumanDeployManager(BaseDeployManager):
     def __init__(self):
-        self.changes_made = False  # Add this flag to track changes
-        
-        # Configure logging
-        logging.basicConfig(
-            level=logging.INFO,
-            format='[%(asctime)s] %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S'
-        )
-        self.logger = logging.getLogger(__name__)
-
-    def run_command(self, cmd: list, cwd: Optional[Path] = None) -> Tuple[bool, str]:
-        """Run a shell command and return success status and output."""
-        try:
-            result = subprocess.run(
-                cmd,
-                cwd=str(cwd) if cwd else None,
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            return True, result.stdout
-        except subprocess.CalledProcessError as e:
-            return False, f"Command failed: {e.stderr}"
-        except Exception as e:
-            return False, f"Error: {str(e)}"
-
-    def get_latest_file(self) -> Tuple[bool, Optional[str], Optional[str]]:
-        """Get the latest file and generate blog URL."""
-        try:
-            files = sorted(OBSIDIAN_HUMAN_POSTS_PATH.glob('*.md'), key=lambda x: x.stat().st_mtime, reverse=True)
-            if not files:
-                return False, None, "No markdown files found"
-            
-            latest_file = files[0]
-            file_name = latest_file.stem.lower()
-            blog_url = f"{HUMAN_BLOG_URL}/{file_name}/"
-            
-            self.logger.info("-" * 40)
-            self.logger.info(f"BLOG_URL={blog_url}")
-            self.logger.info("-" * 40)
-            
-            return True, blog_url, None
-        except Exception as e:
-            return False, None, str(e)
+        super().__init__()
+        self.dest_path = HUMAN_POSTS_PATH
+        self.post_file_path = OBSIDIAN_HUMAN_POSTS_PATH
+        self.blog_url_base = HUMAN_BLOG_URL
 
     def sync_images(self) -> bool:
         """Verify all images are properly synced."""
         try:
-
             self.logger.info("Verifying image sync:")
             self.logger.info(f"  Source: {OBSIDIAN_HUMAN_IMAGES_PATH}")
             self.logger.info(f"  Destination: {HUMAN_BLOG_SITE_STATIC_IMAGES_PATH}")
@@ -127,7 +88,7 @@ class DeployManager:
                             self.logger.info(f"      ✓ {image_path}")
                         else:
                             self.logger.warning(f"      ✗ Missing: {image_path}")
-                            self.changes_made = True  # Set flag when images are copied
+                            self.changes_made = True
                 else:
                     self.logger.info("    No images found")
 
@@ -151,7 +112,6 @@ class DeployManager:
             
             files_processed = 0
             for source_file in source_files:
-
                 self.logger.info(f"Checking file: {source_file.name}")
                 
                 # Check if file needs to be synced
@@ -161,90 +121,19 @@ class DeployManager:
                 with open(source_file, "r") as file:
                     content = file.read()
                 
-                # Find all image references (both Obsidian and Markdown formats)
-                obsidian_images = re.findall(r'\[\[([^]]*\.png)\]\]', content)
-                markdown_images = re.findall(r'!\[.*?\]\(/images/([^)]+)\)', content)
-                images = obsidian_images + markdown_images
-                missing_images = False
-
-                self.logger.info(f"Checking images: {images}")
+                # Process images and update content
+                content = self._process_images(content, source_file)
                 
-                # Check if any images are missing in destination
-                for image in images:
-
-                    self.logger.info(f"Checking image: {image}")
-
-                    new_image_name = image.replace(' ', '_')
-                    dest_image = HUMAN_BLOG_SITE_STATIC_IMAGES_PATH / new_image_name
-                    self.logger.info(f"  - {source_file.name} (checking image: {image})")
-                    if not dest_image.exists():
-                        missing_images = True
-                        self.logger.info(f"  - {source_file.name} (missing image: {image})")
-                        
-                        # Copy the missing image
-                        image_source = OBSIDIAN_HUMAN_IMAGES_PATH / image
-                        if image_source.exists():
-                            # Ensure the destination directory exists
-                            dest_image.parent.mkdir(parents=True, exist_ok=True)
-                            # Copy the image
-                            shutil.copy2(str(image_source), str(dest_image))
-                            self.logger.info(f"    ✓ Copied missing image: {image} -> {dest_image}")
-                            self.changes_made = True  # Set flag when images are copied
-                        else:
-                            self.logger.warning(f"    ✗ Source image not found: {image_source}")
-
-                # Skip if destination exists, is newer than source, and has all images
-                if (dest_file.exists() and 
-                    dest_file.stat().st_mtime >= source_file.stat().st_mtime and 
-                    not missing_images):
-                    self.logger.info(f"  - {source_file.name} (no changes)")
-                    continue
-                
-                self.logger.info(f"  - {source_file.name} (needs update)")
-
-                files_processed += 1
-                filename = source_file.name
-                blog_url = f"{HUMAN_BLOG_URL}/posts/{filename[:-3].lower().replace(' ', '-')}/"
-                self.logger.info(f"  - {filename}")
-                self.logger.info(f"    URL: {blog_url}")
-                
-                # Read content and process images
-                with open(source_file, "r") as file:
-                    content = file.read()
-                
-                # Find and replace image links
-                images = re.findall(r'\[\[([^]]*\.png)\]\]', content)
-                self.logger.info(f"    Found {len(images)} images to process")
-                
-                for image in images:
-                    self.logger.info(f"    Processing image: {image}")
-                    # Replace spaces with underscores in image filename
-                    new_image_name = image.replace(' ', '_')
-                    
-                    # Rename the image in Obsidian notes folder if needed
-                    obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / image
-                    new_obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / new_image_name
-                    if obsidian_image.exists() and obsidian_image != new_obsidian_image:
-                        obsidian_image.rename(new_obsidian_image)
-                        self.logger.info(f"    ✓ Renamed Obsidian image: {image} -> {new_image_name}")
-                        self.changes_made = True
-                    
-                    # Prepare the Markdown-compatible link
-                    markdown_image = f"[Image](/images/{new_image_name})"
-                    content = content.replace(f"[[{image}]]", markdown_image)
-                
-                # Write processed content back to source file
+                # Write processed content back
                 with open(source_file, "w") as file:
                     file.write(content)
-                self.logger.info(f"    ✓ Updated source file")
-                
-                # Write processed content to destination
                 with open(dest_file, "w") as file:
                     file.write(content)
-                self.logger.info(f"    ✓ Created destination file")
-            
+                
+                files_processed += 1
+                
             if files_processed > 0:
-                self.changes_made = True  # Set flag when files are processed
+                self.changes_made = True
                 self.logger.info(f"Content sync completed successfully ({files_processed} files updated)")
             else:
                 self.logger.info("No files needed updating")
@@ -255,63 +144,34 @@ class DeployManager:
             self.logger.exception("Detailed error trace:")
             return False
 
-    def build_hugo(self) -> bool:
+    def _process_images(self, content: str, source_file: Path) -> str:
+        """Process images in content and return updated content."""
+        images = re.findall(r'\[\[([^]]*\.png)\]\]', content)
+        
+        for image in images:
+            self.logger.info(f"    Processing image: {image}")
+            new_image_name = image.replace(' ', '_')
+            
+            # Handle image in Obsidian folder
+            obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / image
+            new_obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / new_image_name
+            if obsidian_image.exists() and obsidian_image != new_obsidian_image:
+                obsidian_image.rename(new_obsidian_image)
+                self.logger.info(f"    ✓ Renamed Obsidian image: {image} -> {new_image_name}")
+                self.changes_made = True
+            
+            # Update content with markdown-style link
+            markdown_image = f"![Image](/images/{new_image_name})"
+            content = content.replace(f"[[{image}]]", markdown_image)
+            
+        return content
+
+    def build_hugo(self, site_path: Path) -> bool:
         """Build Hugo site."""
-        success, output = self.run_command(['hugo'], cwd=HUMAN_BLOG_SITE_PATH)
+        success, output = self.run_command(['hugo'], cwd=site_path)
         if not success:
             self.logger.error(f"Hugo build failed: {output}")
         return success
-
-    def git_operations(self) -> bool:
-        """Handle all git operations."""
-        try:
-            # Add all changes
-            self.run_command(['git', 'add', '.'], cwd=HUMAN_BLOG_SITE_PATH)
-            
-            # Check for changes
-            result = subprocess.run(['git', 'diff', '--cached', '--quiet'], 
-                                 cwd=HUMAN_BLOG_SITE_PATH, 
-                                 capture_output=True)
-            
-            if result.returncode == 1:  # Changes exist
-                commit_message = f"New Blog Post on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                self.run_command(['git', 'commit', '-m', commit_message], cwd=HUMAN_BLOG_SITE_PATH)
-                
-                # Push to main
-                self.run_command(['git', 'push', 'origin', 'main'], cwd=HUMAN_BLOG_SITE_PATH)
-                
-                # Handle branch branch
-                self.handle_branch_deployment()
-                
-            return True
-        except Exception as e:
-            self.logger.error(f"Git operations failed: {e}")
-            return False
-
-    def handle_branch_deployment(self) -> bool:
-        """Handle branch branch deployment."""
-        try:
-            # Remove existing hosdeploy branch if it exists
-            subprocess.run(['git', 'branch', '-D', 'deploy'], 
-                         cwd=HUMAN_BLOG_SITE_PATH,
-                         stderr=subprocess.DEVNULL)
-            
-            # Create new deploy branch
-            self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'deploy'],
-                           cwd=HUMAN_BLOG_SITE_PATH)
-            
-            # Force push to hostinger
-            self.run_command(['git', 'push', 'origin', 'deploy:deploy', '--force'],
-                           cwd=HUMAN_BLOG_SITE_PATH)
-            
-            # Cleanup
-            self.run_command(['git', 'branch', '-D', 'deploy'],
-                           cwd=HUMAN_BLOG_SITE_PATH)
-            
-            return True
-        except Exception as e:
-            self.logger.error(f"Branch deployment failed: {e}")
-            return False
 
     def show_success_notification(self, no_changes=False):
         """Show success notification on macOS."""
@@ -323,7 +183,7 @@ class DeployManager:
 
 def main():
     """Main entry point for deployment process."""
-    deploy_manager = DeployManager()
+    deploy_manager = HumanDeployManager()
     
     # Run sync operations first
     if not all([
@@ -332,14 +192,11 @@ def main():
     ]):
         return False
 
-    # TODO: Remove this
-    # Disable GIT operations
-    return True
     # Only proceed with build and git operations if changes were made
     if deploy_manager.changes_made:
         if all([
-            deploy_manager.build_hugo(),
-            deploy_manager.git_operations()
+            deploy_manager.build_hugo(HUMAN_BLOG_SITE_PATH),
+            deploy_manager.git_operations(HUMAN_BLOG_SITE_PATH)
         ]):
             deploy_manager.show_success_notification()
             return True

@@ -104,7 +104,6 @@ class MidjourneyWebhookHandler:
     def save_image_and_prompt(self, image_url, prompt):
         """Process and save the image and prompt."""
         try:
-
             image_timestamp = os.getenv('IMAGE_TIMESTAMP')
             # Create directory if it doesn't exist
             AI_BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
@@ -124,8 +123,12 @@ class MidjourneyWebhookHandler:
             self.slice_and_save_images(dated_ai_image_path,
                                        image_timestamp)
             # Run deployment process
-            self.deploy_manager.build_hugo()
-            self.deploy_manager.git_operations()
+            success = self.deploy_manager.build_hugo()
+            if success:
+                logger.info(f"Hugo built Successfully")
+            success = self.deploy_manager.git_operations()
+            if success:
+                logger.info(f"Git operations completed Successfully")
             
         except Exception as e:
             logger.error(f"Error in save_image_and_prompt: {e}")
