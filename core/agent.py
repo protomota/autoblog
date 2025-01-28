@@ -46,7 +46,7 @@ class BlogAgent:
         common_prompts = os.path.join(prompts_base, "_common")
 
         # Set up paths
-        self.agent_prompt_path = os.path.join(agent_prompts, "agent-prompt.txt")
+        self.agent_prompt_path = os.path.join(agent_prompts, "agent_prompt.txt")
         self.enhanced_prompt_path = os.path.join(agent_prompts, "enhanced_prompt.txt")
         self.disclaimer_path = os.path.join(agent_prompts, "disclaimer.txt")
         self.blog_page_template_path = os.path.join(agent_prompts, "blog_page_template.md")
