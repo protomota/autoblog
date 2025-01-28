@@ -13,31 +13,27 @@ PROJECT_ROOT = Path(__file__).parent.parent
 # Add to Python path
 sys.path.append(str(PROJECT_ROOT))
 
-# Setup Environment Variables
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
-BRAVE_SEARCH_API_KEY = os.getenv("BRAVE_SEARCH_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-USERAPI_AI_API_KEY = os.getenv("USERAPI_AI_API_KEY")
-USERAPI_AI_ACCOUNT_HASH = os.getenv("USERAPI_AI_ACCOUNT_HASH")
+# Handle optional environment variables with default values or None checks
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", None)
+BRAVE_SEARCH_API_KEY = os.getenv("BRAVE_SEARCH_API_KEY", None)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", None)
+USERAPI_AI_API_KEY = os.getenv("USERAPI_AI_API_KEY", None)
+USERAPI_AI_ACCOUNT_HASH = os.getenv("USERAPI_AI_ACCOUNT_HASH", None)
 
-PROJECT_ROOT_ENV = os.getenv("PROJECT_ROOT")  # Renamed to avoid conflict
-HUMAN_BLOG_URL = os.getenv("HUMAN_BLOG_URL")
-AI_BLOG_URL = os.getenv("AI_BLOG_URL")
+HUMAN_BLOG_URL = os.getenv("HUMAN_BLOG_URL", None)
+AI_BLOG_URL = os.getenv("AI_BLOG_URL", None)
 
-# Convert PROJECT_ROOT_ENV to Path if it exists, otherwise use PROJECT_ROOT
-PROJECT_ROOT_PATH = Path(PROJECT_ROOT_ENV) if PROJECT_ROOT_ENV else PROJECT_ROOT
-
-OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH"))
+OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH", "")) if os.getenv("OBSIDIAN_NOTES_PATH") else None
 
 # Setup Long Paths
-BLOGI_ROOT = PROJECT_ROOT_PATH / "blogi"
+BLOGI_ROOT = PROJECT_ROOT / "blogi"
 # Add to Python path
 sys.path.append(str(BLOGI_ROOT))
 
-HUMAN_BLOG_SITE_PATH = PROJECT_ROOT_PATH / "human_blog"
+HUMAN_BLOG_SITE_PATH = PROJECT_ROOT / "human_blog"
 HUMAN_BLOG_SITE_STATIC_IMAGES_PATH = HUMAN_BLOG_SITE_PATH / "static" / "images"
 HUMAN_POSTS_PATH = HUMAN_BLOG_SITE_PATH / "content" / "posts"
-AI_BLOG_SITE_PATH = PROJECT_ROOT_PATH / "ai_blog"
+AI_BLOG_SITE_PATH = PROJECT_ROOT / "ai_blog"
 AI_BLOG_SITE_STATIC_IMAGES_PATH = AI_BLOG_SITE_PATH / "static" / "images"
 AI_POSTS_PATH = AI_BLOG_SITE_PATH / "content" / "posts"
 OBSIDIAN_AI_POSTS_PATH = OBSIDIAN_NOTES_PATH / "ai_posts"

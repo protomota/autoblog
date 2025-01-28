@@ -24,9 +24,13 @@ class AIDeployManager(BaseDeployManager):
         super().__init__()
         self.project_root = PROJECT_ROOT
         self.ai_blog_site_path = PROJECT_ROOT / "ai_blog"
-        self.source_path = self.ai_blog_site_path / 'content' / 'posts'
         self.post_file_path = None
         self.blog_url_base = AI_BLOG_URL
+
+        self.dest_path = HUMAN_POSTS_PATH
+        self.post_file_path = None
+        self.blog_url_base = AI_BLOG_URL
+
         self._initialized = True
 
 def main(agent_type: str, agent_name: str, **kwargs):
