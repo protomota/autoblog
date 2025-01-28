@@ -5,10 +5,8 @@ import hashlib
 import json
 import os
 import requests
-import subprocess
 from pathlib import Path
 import sys
-import datetime
 
 from PIL import Image
 
@@ -157,7 +155,6 @@ webhook_handler = MidjourneyWebhookHandler()
 @app.route('/imagine/webhook', methods=['POST'])
 def webhook_handler_route():
     try:
-        payload = request.get_data().decode('utf-8')
         data = request.json
         logger.info(f"Received webhook data: {data}")
         
