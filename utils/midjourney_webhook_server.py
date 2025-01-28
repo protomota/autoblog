@@ -16,7 +16,7 @@ from PIL import Image
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
-from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_PATH, AI_BLOG_SITE_STATIC_IMAGES_PATH, OBSIDIAN_NOTES_PATH, OBSIDIAN_AI_IMAGES_PATH
+from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_STATIC_IMAGES_PATH, OBSIDIAN_AI_IMAGES_PATH
 from blogi.deployment.ai_deployment_manager import AIDeployManager
 
 app = Flask(__name__)
@@ -67,15 +67,17 @@ class MidjourneyWebhookHandler:
                     f"{base_name}_{position}.png"
                 ]:
                     ai_output_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / filename
-                    obsidian_output_path = OBSIDIAN_AI_IMAGES_PATH / filename
+                    obsidian_output_path = OBSIDIAN_AI_IMAGES_PATH / filename if OBSIDIAN_AI_IMAGES_PATH else None
                     try:
                         quadrant.save(ai_output_path)
-                        quadrant.save(obsidian_output_path)
                         logger.info(f"Saved: {ai_output_path}")
-                        logger.info(f"Saved: {obsidian_output_path}")
+                        if obsidian_output_path:
+                            quadrant.save(obsidian_output_path)
+                            logger.info(f"Saved: {obsidian_output_path}")
                     except Exception as e:
                         logger.error(f"Error saving {ai_output_path}: {e}")
-                        logger.error(f"Error saving {obsidian_output_path}: {e}")
+                        if obsidian_output_path:
+                            logger.error(f"Error saving {obsidian_output_path}: {e}")
                         
         except Exception as e:
             logger.error(f"Error processing image: {e}")
@@ -107,20 +109,28 @@ class MidjourneyWebhookHandler:
             image_timestamp = os.getenv('IMAGE_TIMESTAMP')
             # Create directory if it doesn't exist
             AI_BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
-            OBSIDIAN_AI_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
-            # Create paths for image and prompt
-            dated_ai_image_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.png"
-            dated_ai_prompt_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.md"
-            dated_obsidian_image_path = OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.png"
-            dated_obsidian_prompt_path = OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.md"
             
-            # Save prompt and download image
-            self.save_prompt_to_file(prompt, dated_ai_prompt_path)
-            self.save_prompt_to_file(prompt, dated_obsidian_prompt_path)
-            self.download_image(image_url, dated_ai_image_path)
-            self.download_image(image_url, dated_obsidian_image_path)
+            # Create AI blog paths and save files
+            dated_ai_paths = {
+                'image': AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.png",
+                'prompt': AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.md"
+            }
+            self.save_prompt_to_file(prompt, dated_ai_paths['prompt'])
+            self.download_image(image_url, dated_ai_paths['image'])
+            
+            # Setup Obsidian paths and save files if enabled
+            dated_obsidian_paths = None
+            if OBSIDIAN_AI_IMAGES_PATH:
+                OBSIDIAN_AI_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+                dated_obsidian_paths = {
+                    'image': OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.png",
+                    'prompt': OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.md"
+                }
+                self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
+                self.download_image(image_url, dated_obsidian_paths['image'])
+            
             # Slice the image into quadrants
-            self.slice_and_save_images(dated_ai_image_path,
+            self.slice_and_save_images(dated_ai_paths['image'],
                                        image_timestamp)
             # Run deployment process
             success = self.deploy_manager.build_hugo()

@@ -5,7 +5,7 @@ import logging
 import datetime
 from pathlib import Path
 from typing import Optional, Tuple
-from blogi.core.config import PROJECT_ROOT, AI_BLOG_URL
+from blogi.core.config import PROJECT_ROOT, AI_BLOG_URL, AI_BLOG_SITE_PATH, AI_POSTS_PATH
 from .base_deployment_manager import BaseDeployManager
 
 class AIDeployManager(BaseDeployManager):
@@ -23,11 +23,11 @@ class AIDeployManager(BaseDeployManager):
             
         super().__init__()
         self.project_root = PROJECT_ROOT
-        self.ai_blog_site_path = PROJECT_ROOT / "ai_blog"
+        self.ai_blog_site_path = AI_BLOG_SITE_PATH
         self.post_file_path = None
         self.blog_url_base = AI_BLOG_URL
 
-        self.dest_path = HUMAN_POSTS_PATH
+        self.dest_path = AI_POSTS_PATH
         self.post_file_path = None
         self.blog_url_base = AI_BLOG_URL
 

@@ -14,7 +14,6 @@ sys.path.append(str(PROJECT_ROOT.parent))
 
 from blogi.core.config import (
     PROJECT_ROOT,
-    OBSIDIAN_NOTES_PATH,
     HUMAN_BLOG_SITE_STATIC_IMAGES_PATH,
     OBSIDIAN_HUMAN_IMAGES_PATH,
     HUMAN_BLOG_URL,
