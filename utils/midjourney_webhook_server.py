@@ -17,7 +17,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
 from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_PATH
-from blogi.deployment.ai_deploy_manager import AIDeployManager
+from blogi.deployment.ai_deployment_manager import AIDeployManager
 
 app = Flask(__name__)
 logger = setup_logging()

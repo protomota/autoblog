@@ -30,7 +30,7 @@ app = Flask(__name__, static_url_path='/static')
 def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
     """Execute the command using the Python deployment manager."""
     try:
-        from blogi.deployment.ai_deploy_manager import AIDeployManager, main as deploy_main
+        from blogi.deployment.ai_deployment_manager import AIDeployManager, main as deploy_main
         
         # Get kwargs for main function
         kwargs = {
@@ -94,7 +94,7 @@ def run_midjourney():
     apple_script = f'''
     tell application "Terminal"
         activate
-        do script "source {PROJECT_ROOT}/venv/bin/activate && python {BLOGI_ROOT}/ai_agents/utils/midjourney_webhook_server.py"
+        do script "source {PROJECT_ROOT}/venv/bin/activate && python {BLOGI_ROOT}/utils/midjourney_webhook_server.py"
     end tell
     '''
     
