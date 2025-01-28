@@ -62,9 +62,6 @@ OPENAI_API_KEY=your_openai_api_key
 USERAPI_AI_API_KEY=your_midjourney_api_key
 USERAPI_AI_ACCOUNT_HASH=your_midjourney_account_hash
 
-# Image Sync Paths
-SITE_OBSIDIAN_POSTS_DIR=/path/to/obsidian/folder
-SITE_STATIC_IMAGES_DIR=/path/to/site/static/images
 ```
 
 ## Directory Structure

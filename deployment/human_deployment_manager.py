@@ -12,7 +12,16 @@ from typing import Optional, Tuple
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
-from blogi.core.config import PROJECT_ROOT, OBSIDIAN_NOTES_PATH
+from blogi.core.config import (
+    PROJECT_ROOT,
+    OBSIDIAN_NOTES_PATH,
+    HUMAN_BLOG_SITE_STATIC_IMAGES_PATH,
+    OBSIDIAN_HUMAN_IMAGES_PATH,
+    HUMAN_BLOG_URL,
+    HUMAN_BLOG_SITE_PATH,
+    OBSIDIAN_HUMAN_POSTS_PATH,
+    HUMAN_POSTS_PATH
+)
 
 # Debug mode flag - set to True to enable DEBUG logging
 DEBUG_MODE = False
@@ -34,10 +43,6 @@ logger = setup_logging()
 
 class DeployManager:
     def __init__(self):
-        self.human_blog_url = os.getenv("HUMAN_BLOG_URL")
-        self.human_blog_site_path = PROJECT_ROOT / "human_blog"
-        self.source_path = OBSIDIAN_NOTES_PATH / "posts"
-        self.dest_path = self.human_blog_site_path / "content" / "posts"
         self.changes_made = False  # Add this flag to track changes
         
         # Configure logging
@@ -67,13 +72,13 @@ class DeployManager:
     def get_latest_file(self) -> Tuple[bool, Optional[str], Optional[str]]:
         """Get the latest file and generate blog URL."""
         try:
-            files = sorted(self.source_path.glob('*.md'), key=lambda x: x.stat().st_mtime, reverse=True)
+            files = sorted(OBSIDIAN_HUMAN_POSTS_PATH.glob('*.md'), key=lambda x: x.stat().st_mtime, reverse=True)
             if not files:
                 return False, None, "No markdown files found"
             
             latest_file = files[0]
             file_name = latest_file.stem.lower()
-            blog_url = f"{self.human_blog_url}/{file_name}/"
+            blog_url = f"{HUMAN_BLOG_URL}/{file_name}/"
             
             self.logger.info("-" * 40)
             self.logger.info(f"BLOG_URL={blog_url}")
@@ -86,22 +91,20 @@ class DeployManager:
     def sync_images(self) -> bool:
         """Verify all images are properly synced."""
         try:
-            site_static_images_dir = self.human_blog_site_path / 'static' / 'images'
-            obsidian_images_dir = OBSIDIAN_NOTES_PATH / 'images'
 
             self.logger.info("Verifying image sync:")
-            self.logger.info(f"  Source: {obsidian_images_dir}")
-            self.logger.info(f"  Destination: {site_static_images_dir}")
+            self.logger.info(f"  Source: {OBSIDIAN_HUMAN_IMAGES_PATH}")
+            self.logger.info(f"  Destination: {HUMAN_BLOG_SITE_STATIC_IMAGES_PATH}")
 
             # Validate directories
-            for directory in [self.dest_path, obsidian_images_dir, site_static_images_dir]:
+            for directory in [HUMAN_POSTS_PATH, OBSIDIAN_HUMAN_IMAGES_PATH, HUMAN_BLOG_SITE_STATIC_IMAGES_PATH]:
                 if not directory.exists():
                     self.logger.error(f"  Directory not found: {directory}")
                     raise FileNotFoundError(f"Directory not found: {directory}")
                 self.logger.debug(f"  ✓ Validated: {directory}")
 
             # Verify all markdown files have correct image paths
-            md_files = list(self.dest_path.glob('*.md'))
+            md_files = list(HUMAN_POSTS_PATH.glob('*.md'))
             self.logger.info(f"Verifying {len(md_files)} markdown files:")
 
             for filepath in md_files:
@@ -119,7 +122,7 @@ class DeployManager:
                 if markdown_links:
                     self.logger.info(f"    Found {len(markdown_links)} image references:")
                     for image in markdown_links:
-                        image_path = site_static_images_dir / image
+                        image_path = HUMAN_BLOG_SITE_STATIC_IMAGES_PATH / image
                         if image_path.exists():
                             self.logger.info(f"      ✓ {image_path}")
                         else:
@@ -143,7 +146,7 @@ class DeployManager:
             self.dest_path.mkdir(parents=True, exist_ok=True)
             
             # Get list of files and process them
-            source_files = [f for f in self.source_path.glob('*.md')]
+            source_files = [f for f in OBSIDIAN_HUMAN_POSTS_PATH.glob('*.md')]
             self.logger.info(f"Checking {len(source_files)} files for changes:")
             
             files_processed = 0
@@ -152,7 +155,7 @@ class DeployManager:
                 self.logger.info(f"Checking file: {source_file.name}")
                 
                 # Check if file needs to be synced
-                dest_file = self.dest_path / source_file.name
+                dest_file = HUMAN_POSTS_PATH / source_file.name
 
                 # Read content to check for images
                 with open(source_file, "r") as file:
@@ -172,14 +175,14 @@ class DeployManager:
                     self.logger.info(f"Checking image: {image}")
 
                     new_image_name = image.replace(' ', '_')
-                    dest_image = self.human_blog_site_path / 'static' / 'images' / new_image_name
+                    dest_image = HUMAN_BLOG_SITE_STATIC_IMAGES_PATH / new_image_name
                     self.logger.info(f"  - {source_file.name} (checking image: {image})")
                     if not dest_image.exists():
                         missing_images = True
                         self.logger.info(f"  - {source_file.name} (missing image: {image})")
                         
                         # Copy the missing image
-                        image_source = OBSIDIAN_NOTES_PATH / 'images' / image
+                        image_source = OBSIDIAN_HUMAN_IMAGES_PATH / image
                         if image_source.exists():
                             # Ensure the destination directory exists
                             dest_image.parent.mkdir(parents=True, exist_ok=True)
@@ -201,7 +204,7 @@ class DeployManager:
 
                 files_processed += 1
                 filename = source_file.name
-                blog_url = f"{self.human_blog_url}/posts/{filename[:-3].lower().replace(' ', '-')}/"
+                blog_url = f"{HUMAN_BLOG_URL}/posts/{filename[:-3].lower().replace(' ', '-')}/"
                 self.logger.info(f"  - {filename}")
                 self.logger.info(f"    URL: {blog_url}")
                 
@@ -219,8 +222,8 @@ class DeployManager:
                     new_image_name = image.replace(' ', '_')
                     
                     # Rename the image in Obsidian notes folder if needed
-                    obsidian_image = OBSIDIAN_NOTES_PATH / 'images' / image
-                    new_obsidian_image = OBSIDIAN_NOTES_PATH / 'images' / new_image_name
+                    obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / image
+                    new_obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / new_image_name
                     if obsidian_image.exists() and obsidian_image != new_obsidian_image:
                         obsidian_image.rename(new_obsidian_image)
                         self.logger.info(f"    ✓ Renamed Obsidian image: {image} -> {new_image_name}")
@@ -254,7 +257,7 @@ class DeployManager:
 
     def build_hugo(self) -> bool:
         """Build Hugo site."""
-        success, output = self.run_command(['hugo'], cwd=self.human_blog_site_path)
+        success, output = self.run_command(['hugo'], cwd=HUMAN_BLOG_SITE_PATH)
         if not success:
             self.logger.error(f"Hugo build failed: {output}")
         return success
@@ -263,19 +266,19 @@ class DeployManager:
         """Handle all git operations."""
         try:
             # Add all changes
-            self.run_command(['git', 'add', '.'], cwd=self.human_blog_site_path)
+            self.run_command(['git', 'add', '.'], cwd=HUMAN_BLOG_SITE_PATH)
             
             # Check for changes
             result = subprocess.run(['git', 'diff', '--cached', '--quiet'], 
-                                 cwd=self.human_blog_site_path, 
+                                 cwd=HUMAN_BLOG_SITE_PATH, 
                                  capture_output=True)
             
             if result.returncode == 1:  # Changes exist
                 commit_message = f"New Blog Post on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-                self.run_command(['git', 'commit', '-m', commit_message], cwd=self.human_blog_site_path)
+                self.run_command(['git', 'commit', '-m', commit_message], cwd=HUMAN_BLOG_SITE_PATH)
                 
                 # Push to main
-                self.run_command(['git', 'push', 'origin', 'main'], cwd=self.human_blog_site_path)
+                self.run_command(['git', 'push', 'origin', 'main'], cwd=HUMAN_BLOG_SITE_PATH)
                 
                 # Handle hostinger branch
                 self.handle_hostinger_deployment()
@@ -290,20 +293,20 @@ class DeployManager:
         try:
             # Remove existing hostinger-deploy branch if it exists
             subprocess.run(['git', 'branch', '-D', 'hostinger-deploy'], 
-                         cwd=self.human_blog_site_path,
+                         cwd=HUMAN_BLOG_SITE_PATH,
                          stderr=subprocess.DEVNULL)
             
             # Create new hostinger-deploy branch
             self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'hostinger-deploy'],
-                           cwd=self.human_blog_site_path)
+                           cwd=HUMAN_BLOG_SITE_PATH)
             
             # Force push to hostinger
             self.run_command(['git', 'push', 'origin', 'hostinger-deploy:hostinger-humanblog', '--force'],
-                           cwd=self.human_blog_site_path)
+                           cwd=HUMAN_BLOG_SITE_PATH)
             
             # Cleanup
             self.run_command(['git', 'branch', '-D', 'hostinger-deploy'],
-                           cwd=self.human_blog_site_path)
+                           cwd=HUMAN_BLOG_SITE_PATH)
             
             return True
         except Exception as e:
