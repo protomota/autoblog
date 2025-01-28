@@ -36,6 +36,12 @@ def setup_argparser() -> argparse.ArgumentParser:
     return parser
 
 def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser):
+    # Add valid agent types check
+    valid_agent_types = [BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT]
+    if args.agent_type not in valid_agent_types:
+        parser.error(f"--agent_type must be one of: {', '.join(valid_agent_types)}")
+    
+    # Existing validation
     if args.agent_type == BLOG_ARTIST_AI_AGENT:
         if not args.webhook_url:
             parser.error("--webhook_url is required for artist agent")
