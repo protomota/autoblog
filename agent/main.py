@@ -97,8 +97,7 @@ async def main():
             agent_name=args.agent_name,
             agent_type=args.agent_type,
             topic=args.topic,
-            image_prompt=args.image_prompt,
-            image_service=image_service if args.agent_type == BLOG_ARTIST_AI_AGENT else None
+            image_prompt=args.image_prompt
         ) as agent:
             if not await generate_and_save_content(agent):
                 return 1

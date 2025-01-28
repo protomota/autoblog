@@ -9,8 +9,8 @@ from blogi.core.config import logger
 
 class AnthropicService:
     def __init__(self, model: str):
+        self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
         self.model = model
-        self.client = anthropic.Anthropic()
         self.session = None
         self._is_closed = False
 

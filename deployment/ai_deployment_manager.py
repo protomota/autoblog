@@ -37,18 +37,26 @@ class AIDeployManager:
     def run_command(self, cmd: list, cwd: Optional[Path] = None) -> Tuple[bool, str]:
         """Run a shell command and return success status and output."""
         try:
+            self.logger.info(f"Running command: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd,
                 cwd=str(cwd) if cwd else None,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
+                env=os.environ.copy()  # Ensure environment variables are passed
             )
+            if result.stderr:
+                self.logger.warning(f"Command stderr: {result.stderr}")
             return True, result.stdout
         except subprocess.CalledProcessError as e:
-            return False, f"Command failed: {e.stderr}"
+            error_msg = f"Command failed with exit code {e.returncode}:\nstdout: {e.stdout}\nstderr: {e.stderr}"
+            self.logger.error(error_msg)
+            return False, error_msg
         except Exception as e:
-            return False, f"Error: {str(e)}"
+            error_msg = f"Error executing command: {str(e)}"
+            self.logger.error(error_msg)
+            return False, error_msg
 
     def get_latest_file(self) -> Tuple[bool, Optional[str], Optional[str]]:
         """Get the file and generate blog URL."""
