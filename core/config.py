@@ -27,14 +27,13 @@ OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH", "")) if os.getenv("O
 
 # Setup Long Paths
 BLOGI_ROOT = PROJECT_ROOT / "blogi"
-# Add to Python path
 sys.path.append(str(BLOGI_ROOT))
-
 
 AI_BLOG_SITE_PATH = PROJECT_ROOT / "ai_blog" if AI_BLOG_URL else None
 AI_BLOG_SITE_STATIC_IMAGES_PATH = AI_BLOG_SITE_PATH / "static" / "images" if AI_BLOG_SITE_PATH else None
 AI_POSTS_PATH = AI_BLOG_SITE_PATH / "content" / "posts" if AI_BLOG_SITE_PATH else None
-PROMPTS_DIR = BLOGI_ROOT / "prompts" if AI_BLOG_SITE_PATH else None
+# Fix the PROMPTS_DIR path - remove duplicate blogi
+PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts" if AI_BLOG_SITE_PATH else None
 
 HUMAN_BLOG_SITE_PATH = PROJECT_ROOT / "human_blog"
 HUMAN_BLOG_SITE_STATIC_IMAGES_PATH = HUMAN_BLOG_SITE_PATH / "static" / "images"
