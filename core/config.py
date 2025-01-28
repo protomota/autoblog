@@ -20,7 +20,6 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 USERAPI_AI_API_KEY = os.getenv("USERAPI_AI_API_KEY")
 USERAPI_AI_ACCOUNT_HASH = os.getenv("USERAPI_AI_ACCOUNT_HASH")
 
-
 PROJECT_ROOT_ENV = os.getenv("PROJECT_ROOT")  # Renamed to avoid conflict
 HUMAN_BLOG_URL = os.getenv("HUMAN_BLOG_URL")
 AI_BLOG_URL = os.getenv("AI_BLOG_URL")

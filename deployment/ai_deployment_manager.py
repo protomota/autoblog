@@ -102,37 +102,37 @@ class AIDeployManager:
                 # Push to main
                 self.run_command(['git', 'push', 'origin', 'main'], cwd=self.ai_blog_site_path)
                 
-                # Handle hostinger branch
-                self.handle_hostinger_deployment()
+                # Handle deployment branch
+                self.handle_branch_deployment()
                 
             return True
         except Exception as e:
             self.logger.error(f"Git operations failed: {e}")
             return False
 
-    def handle_hostinger_deployment(self) -> bool:
-        """Handle hostinger branch deployment."""
+    def handle_branch_deployment(self) -> bool:
+        """Handle branch deployment."""
         try:
-            # Remove existing hostinger-deploy branch if it exists
-            subprocess.run(['git', 'branch', '-D', 'hostinger-deploy'], 
+            # Remove existing deploy branch if it exists
+            subprocess.run(['git', 'branch', '-D', 'deploy'], 
                          cwd=self.ai_blog_site_path,
                          stderr=subprocess.DEVNULL)
             
-            # Create new hostinger-deploy branch
-            self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'hostinger-deploy'],
+            # Create new deploy branch
+            self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'deploy:deploy'],
                            cwd=self.ai_blog_site_path)
             
-            # Force push to hostinger
-            self.run_command(['git', 'push', 'origin', 'hostinger-deploy:hostinger-protoblog', '--force'],
+            # Force push to deploy
+            self.run_command(['git', 'push', 'origin', 'deploy:deploy', '--force'],
                            cwd=self.ai_blog_site_path)
             
             # Cleanup
-            self.run_command(['git', 'branch', '-D', 'hostinger-deploy'],
+            self.run_command(['git', 'branch', '-D', 'deploy:deploy'],
                            cwd=self.ai_blog_site_path)
             
             return True
         except Exception as e:
-            self.logger.error(f"Hostinger deployment failed: {e}")
+            self.logger.error(f"Branch deployment failed: {e}")
             return False
 
     def show_success_notification(self):

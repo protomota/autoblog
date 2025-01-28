@@ -280,37 +280,37 @@ class DeployManager:
                 # Push to main
                 self.run_command(['git', 'push', 'origin', 'main'], cwd=HUMAN_BLOG_SITE_PATH)
                 
-                # Handle hostinger branch
-                self.handle_hostinger_deployment()
+                # Handle branch branch
+                self.handle_branch_deployment()
                 
             return True
         except Exception as e:
             self.logger.error(f"Git operations failed: {e}")
             return False
 
-    def handle_hostinger_deployment(self) -> bool:
-        """Handle hostinger branch deployment."""
+    def handle_branch_deployment(self) -> bool:
+        """Handle branch branch deployment."""
         try:
-            # Remove existing hostinger-deploy branch if it exists
-            subprocess.run(['git', 'branch', '-D', 'hostinger-deploy'], 
+            # Remove existing hosdeploy branch if it exists
+            subprocess.run(['git', 'branch', '-D', 'deploy'], 
                          cwd=HUMAN_BLOG_SITE_PATH,
                          stderr=subprocess.DEVNULL)
             
-            # Create new hostinger-deploy branch
-            self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'hostinger-deploy'],
+            # Create new deploy branch
+            self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'deploy'],
                            cwd=HUMAN_BLOG_SITE_PATH)
             
             # Force push to hostinger
-            self.run_command(['git', 'push', 'origin', 'hostinger-deploy:hostinger-humanblog', '--force'],
+            self.run_command(['git', 'push', 'origin', 'deploy:deploy', '--force'],
                            cwd=HUMAN_BLOG_SITE_PATH)
             
             # Cleanup
-            self.run_command(['git', 'branch', '-D', 'hostinger-deploy'],
+            self.run_command(['git', 'branch', '-D', 'deploy'],
                            cwd=HUMAN_BLOG_SITE_PATH)
             
             return True
         except Exception as e:
-            self.logger.error(f"Hostinger deployment failed: {e}")
+            self.logger.error(f"Branch deployment failed: {e}")
             return False
 
     def show_success_notification(self, no_changes=False):
