@@ -44,14 +44,15 @@ def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser):
             parser.error("--topic is required for researcher agent")
 
 async def generate_and_save_content(agent: BlogAgent):
-    filename, blog_page = await agent.generate_blog_post()
-    
-    if not filename or not blog_page:
-        logger.error("Failed to generate blog post")
-        return False
-
-    # Save blog post
     try:
+        result = await agent.generate_blog_post()  # Just store the result without unpacking
+        if not result:
+            logger.error("Failed to generate blog post")
+            return False
+
+        filename, blog_page = result  # Unpack after checking result is valid
+        
+        # Save blog post
         filepath = await agent.save_to_content(filename, blog_page)
         if not filepath:
             raise Exception("Failed to save blog post")
