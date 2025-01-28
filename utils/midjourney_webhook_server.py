@@ -1,8 +1,6 @@
 from flask import Flask, request, jsonify
-import logging
 import hmac
 import hashlib
-import json
 import os
 import requests
 from pathlib import Path
