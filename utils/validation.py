@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 # Configure logging
-from ai_agents.core.config import logger
+from blogi.core.config import logger
 
 def check_dependencies() -> bool:
     required_commands = ['git', 'rsync', 'python', 'hugo']
