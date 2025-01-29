@@ -283,7 +283,7 @@ class BlogAgent:
         try:
             prompt = await self.read_file(str(self.title_prompt_path))
             response = await self.anthropic.ask(prompt.format(content=content))
-            return f'"{response.replace('"', "").strip()}"' if response else default_title
+            return f'{response.replace('"', "").strip()}' if response else default_title
         except Exception as e:
             logger.error(f"Title generation error: {str(e)}")
             return default_title
