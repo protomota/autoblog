@@ -45,7 +45,7 @@ class ResearcherPostGenerator:
             pages = self._format_pages(self.templates, metadata, blog_content)
             
             return (
-                self._generate_filename(metadata['title_summary']),
+                self._generate_filename(metadata['filename']),
                 pages['blog_page']
             )
         except Exception as e:
@@ -96,7 +96,7 @@ class ResearcherPostGenerator:
         return {
             'title': await self.agent.generate_title(content),
             'tags': await self.agent.generate_tags(content),
-            'title_summary': await self.agent.generate_title_summary(content),
+            'filename': await self.agent.generate_filename(content),
             'date': datetime.now().strftime('%Y-%m-%d')
         }
 
@@ -116,5 +116,5 @@ class ResearcherPostGenerator:
             )
         }
 
-    def _generate_filename(self, title_summary: str) -> str:
-        return f"{datetime.now().strftime('%Y-%m-%d')}-{title_summary}.md"
+    def _generate_filename(self, filename: str) -> str:
+        return f"{datetime.now().strftime('%Y-%m-%d')}-{filename}.md"

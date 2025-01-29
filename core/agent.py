@@ -288,7 +288,7 @@ class BlogAgent:
             logger.error(f"Title generation error: {str(e)}")
             return default_title
 
-    async def generate_title_summary(self, content: str) -> str:
+    async def generate_filename(self, content: str) -> str:
         """Generate a 5-word summary for use in the filename."""
         default_title = "Default-Title-Post-Is-Here"
         try:
