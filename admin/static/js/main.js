@@ -294,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Handle blog URL
                     if (data.filename) {
                         const urlLink = document.getElementById('filename');
-                        urlLink.href = data.filename;
                         urlLink.textContent = data.filename;
                         urlContainer.classList.remove('hidden');
                         appendToConsole(consoleLog, `Blog Post generated: ${data.filename}`);
