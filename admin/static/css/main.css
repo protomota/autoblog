@@ -132,24 +132,24 @@ h2 {
     color: #FAFAFA;
 }
 
-#filepath-container {
+#filename-container {
     margin-top: 10px;
     padding: 10px;
     background-color: #1E1E1E;
     border-radius: 5px;
 }
 
-#filepath-container.hidden {
+#filename-container.hidden {
     display: none;
 }
 
-#filepath {
+#filename {
     word-break: break-all;
     color: #4B9AFF;
     text-decoration: none;
 }
 
-#filepath:hover {
+#filename:hover {
     text-decoration: underline;
 }
 

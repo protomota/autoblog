@@ -108,7 +108,7 @@ class BlogAgent:
                     image_prompt: Optional[str] = None, webhook_url: Optional[str] = None) -> Tuple[bool, str, Optional[str]]:
         """
         Factory method to create and run a blog generation process.
-        Returns: (success, message, filepath)
+        Returns: (success, message, filepath, filename)
         """
         logger.info("\n=== Starting Blog Generation Process ===")
         
@@ -154,7 +154,7 @@ class BlogAgent:
                 if not filepath:
                     return False, "Failed to save blog post", None
 
-                return True, "Blog post generated and saved successfully", filepath
+                return True, "Blog post generated and saved successfully", filepath, filename
 
         except Exception as e:
             logger.error(f"Error in blog generation: {str(e)}")

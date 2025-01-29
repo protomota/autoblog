@@ -49,7 +49,7 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
     logger.info(f"  - Webhook URL: {webhook_url}")
     
     try:
-        success, message, filepath = await BlogAgent.create(
+        success, message, filepath, filename = await BlogAgent.create(
             agent_type=agent_type,
             agent_name=agent_name,
             topic=topic,
@@ -62,9 +62,8 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
             return False, message, None
             
         logger.info(f"Blog generation successful: {message}")
-        logger.info(f"Generated file: {filepath}")
-        
-        return True, message, filepath
+        logger.info(f"Generated filename: {filename}")
+        return True, message, filepath, filename
         
     except Exception as e:
         logger.error(f"Error in generate command: {str(e)}")
@@ -163,7 +162,7 @@ async def generate():
                 logger.error("Topic is required for researcher agent but was not provided")
                 return jsonify({'success': False, 'message': 'Topic is required for researcher agent'})
             logger.info(f"Executing researcher command with topic: {topic}")
-            success, output, filepath = await execute_generate_command(agent_type, agent_name, topic=topic)
+            success, output, filepath, filename = await execute_generate_command(agent_type, agent_name, topic=topic)
         elif agent_type == BLOG_ARTIST_AI_AGENT:
             webhook_url = data.get('webhook_url')
             if not webhook_url:
@@ -172,25 +171,27 @@ async def generate():
             
             image_prompt = data.get('image_prompt', None)
             logger.info(f"Executing artist command with prompt: {image_prompt}, webhook: {webhook_url}")
-            success, output, filepath = await execute_generate_command(
+            success, output, filepath, filename = await execute_generate_command(
                 agent_type, 
                 agent_name, 
                 image_prompt=image_prompt,
                 webhook_url=webhook_url
             )
 
-        logger.info(f"Command execution completed - Success: {success}, Output: {output}, URL: {filepath}")
+        logger.info(f"Command execution completed - Success: {success}, Output: {output}, Filename: {filename}, Filepath: {filepath}")
         return jsonify({
             'success': success,
             'message': output,
-            'filepath': filepath
+            'filepath': filepath,
+            'filename': filename
         })
     except Exception as e:
         logger.error(f"Error in generate endpoint: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'message': f'Error: {str(e)}',
-            'filepath': None
+            'filepath': None,
+            'filename': None
         })
 
 if __name__ == '__main__':
