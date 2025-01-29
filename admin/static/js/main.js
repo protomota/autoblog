@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add timeout to the fetch request
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 300000); // 5 minute timeout
+            const timeout = setTimeout(() => controller.abort(), 600000); // 10 minute timeout
 
             try {
                 const response = await fetch('/generate', {
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (fetchError) {
                 if (fetchError.name === 'AbortError') {
-                    throw new Error('Request timed out after 5 minutes. Please try again.');
+                    throw new Error('Request timed out after 10 minutes. Please try again.');
                 }
                 throw fetchError;
             }

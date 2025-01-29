@@ -1,6 +1,9 @@
 import os
 import sys
 from pathlib import Path
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 # Get the absolute path to the project root (protomota directory)
 PROJECT_ROOT = str(Path(__file__).resolve().parents[2])  # Go up 3 levels: admin -> blogi -> protomota
@@ -26,7 +29,9 @@ from blogi.core.config import (
 
 app = Flask(__name__, static_url_path='/static')
 
-def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
+executor = ThreadPoolExecutor(max_workers=3)
+
+async def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
     """Execute the command using the Python deployment manager."""
     try:
         from blogi.deployment.ai_deployment_manager import AIDeployManager, main as deploy_main
@@ -43,19 +48,24 @@ def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=No
         # Remove None values
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
         
-        # Run deployment process
-        try:
-            success, error_message = deploy_main(**kwargs)  # Assuming deploy_main now returns a tuple (success, error_message)
-            if not success:
-                return False, f"Deployment failed: {error_message}", None
-        except Exception as deploy_error:
-            return False, f"Deployment failed: Error during deployment process: {str(deploy_error)}", None
+        # Run deployment process in a thread pool
+        loop = asyncio.get_event_loop()
+        success, error_message = await loop.run_in_executor(
+            executor,
+            partial(deploy_main, **kwargs)
+        )
+        
+        if not success:
+            return False, f"Deployment failed: {error_message}", None
             
         # Get blog URL if successful
         if success:
             try:
                 deploy_manager = AIDeployManager()
-                success, blog_url, error = deploy_manager.get_latest_file()
+                success, blog_url, error = await loop.run_in_executor(
+                    executor,
+                    deploy_manager.get_latest_file
+                )
                 if success and blog_url:
                     return True, "Deployment completed successfully", blog_url
                 return False, f"Deployment completed but couldn't get URL: {error}", None
@@ -124,7 +134,7 @@ def start_server():
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/generate', methods=['POST'])
-def generate():
+async def generate():
     try:
         data = request.get_json()
         agent_type = data.get('agent_type')
@@ -134,14 +144,14 @@ def generate():
             topic = data.get('topic')
             if not topic:
                 return jsonify({'success': False, 'message': 'Topic is required for researcher agent'})
-            success, output, blog_url = execute_generate_command(agent_type, agent_name, topic=topic)
+            success, output, blog_url = await execute_generate_command(agent_type, agent_name, topic=topic)
         elif agent_type == BLOG_ARTIST_AI_AGENT:
             webhook_url = data.get('webhook_url')
             if not webhook_url:
                 return jsonify({'success': False, 'message': 'Webhook URL is required for artist agent'})
             
             image_prompt = data.get('image_prompt', None)
-            success, output, blog_url = execute_generate_command(
+            success, output, blog_url = await execute_generate_command(
                 agent_type, 
                 agent_name, 
                 image_prompt=image_prompt,
@@ -161,4 +171,11 @@ def generate():
         })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9229, debug=True)
+    from hypercorn.config import Config
+    from hypercorn.asyncio import serve
+
+    config = Config()
+    config.bind = ["0.0.0.0:9229"]
+    config.use_reloader = True
+    
+    asyncio.run(serve(app, config))
