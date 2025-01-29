@@ -29,7 +29,8 @@ from blogi.core.config import (
         BLOG_RESEARCHER_AI_AGENT, 
         BLOG_ARTIST_AI_AGENT, 
         OBSIDIAN_AI_POSTS_PATH, 
-        PROMPTS_DIR
+        PROMPTS_DIR,
+        BLOG_ARTIST_RANDOM_PROMPT_ARTIST
     )
 
 class BlogAgent:
@@ -109,6 +110,15 @@ class BlogAgent:
     async def create(cls, agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
         """Create a blog post using the specified agent."""
         try:
+            # If it's a BLOG_ARTIST_RANDOM_PROMPT_ARTIST no image prompt is provided, generate one
+            if agent_name == BLOG_ARTIST_RANDOM_PROMPT_ARTIST:
+                logger.info("No image prompt provided, generating random prompt...")
+                prompt_service = OpenAIRandomImagePromptService()
+                image_prompt = await prompt_service.generate_random_prompt()
+                if not image_prompt:
+                    raise ValueError("Failed to generate random image prompt")
+                logger.info(f"Generated random image prompt: {image_prompt}")
+            
             # Create an instance of BlogAgent
             agent = cls(
                 agent_type=agent_type,
@@ -126,18 +136,16 @@ class BlogAgent:
             
             # Use context manager and call the appropriate method
             async with agent:  # Use context manager to handle initialization and cleanup
-                # Both generators use generate_blog_post()
-                result = await generator.generate_blog_post()
+                # Both generators now return (filename, blog_page)
+                filename, blog_page = await generator.generate_blog_post()
                 
-                if isinstance(result, tuple):
-                    filepath = result[0] if result else None
-                else:
-                    filepath = result
+                # Save the blog post
+                filepath = await agent.save_to_obsidian_notes(filename, blog_page)
                     
                 if filepath:
                     return True, "Blog post generated successfully", str(filepath)
                 else:
-                    return False, "Failed to generate blog post", None
+                    return False, "Failed to save blog post", None
                 
         except Exception as e:
             error_msg = f"Error in blog generation: {str(e)}"
@@ -248,17 +256,6 @@ class BlogAgent:
             logger.error(f"Error reading file {filepath}: {str(e)}")
             return None
 
-    async def generate_blog_post(self):
-        """Generate a blog post using the appropriate generator."""
-        try:
-            generator = (
-                ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
-                else ResearcherPostGenerator(self)
-            )
-            return await generator.generate_blog_post()  # Both generators use generate_blog_post()
-        finally:
-            await self.close()
-    
     async def generate_title(self, content: str) -> str:
         """Generate a title from the content."""
         default_title = "Default Title Post Is Here"

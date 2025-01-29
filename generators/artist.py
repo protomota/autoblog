@@ -29,7 +29,11 @@ class ArtistPostGenerator:
             
         return templates
 
-    async def generate_blog_post(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    async def generate_blog_post(self) -> Tuple[str, str]:
+        """Generate a blog post with images.
+        Returns:
+            Tuple[str, str]: A tuple containing (filename, blog_page)
+        """
         try:
             templates = await self._load_templates()
             image_paths = await self._generate_images()
@@ -40,18 +44,19 @@ class ArtistPostGenerator:
             )
             
             if not blog_content:
-                return None, None, None
+                return "default.md", "Failed to generate content"
                 
             metadata = await self._generate_metadata(self.agent.image_prompt)
             pages = self._format_pages(templates, metadata, blog_content, gallery_code)
             
-            return (
-                self._generate_filename(metadata['filename']),
-                pages['blog_page']
-            )
+            filename = self._generate_filename(metadata['filename'])
+            blog_page = pages['blog_page']
+            
+            return filename, blog_page
+            
         except Exception as e:
             logger.error(f"Error generating artist post: {str(e)}")
-            return None, None, None
+            return "error.md", f"Error generating post: {str(e)}"
 
     async def _generate_images(self) -> Dict[str, str]:
         image_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")

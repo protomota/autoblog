@@ -51,7 +51,7 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
     try:
         # Explicitly catch the return values from BlogAgent.create
         try:
-            success, message, filepath = await BlogAgent.create(
+            success, message, filepath, filename = await BlogAgent.create(
                 agent_type=agent_type,
                 agent_name=agent_name,
                 topic=topic,

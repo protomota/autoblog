@@ -28,29 +28,33 @@ class ResearcherPostGenerator:
             
         return templates
 
-    async def generate_blog_post(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    async def generate_blog_post(self) -> Tuple[str, str]:
+        """Generate a research blog post.
+        Returns:
+            Tuple[str, str]: A tuple containing (filename, blog_page)
+        """
         try:
-            self.templates = await self._load_templates()
+            templates = await self._load_templates()
             research_data = await self._gather_research()
-            research_summary = self._format_research_summary(research_data)
             
             blog_content = await self.agent.anthropic.ask(
-                self._format_prompt(self.templates, research_summary)
+                self._format_prompt(templates['agent_prompt'], research_data)
             )
             
             if not blog_content:
-                return None, None, None
+                return "default.md", "Failed to generate content"
                 
             metadata = await self._generate_metadata(blog_content)
-            pages = self._format_pages(self.templates, metadata, blog_content)
+            pages = self._format_pages(templates, metadata, blog_content)
             
-            return (
-                self._generate_filename(metadata['filename']),
-                pages['blog_page']
-            )
+            filename = self._generate_filename(metadata['filename'])
+            blog_page = pages['blog_page']
+            
+            return filename, blog_page
+            
         except Exception as e:
             logger.error(f"Error generating researcher post: {str(e)}")
-            return None, None, None
+            return "error.md", f"Error generating post: {str(e)}"
 
     async def _gather_research(self) -> List[Dict]:
         search_results = await self.agent.brave_client.search_topic(self.agent.topic)
@@ -80,13 +84,14 @@ class ResearcherPostGenerator:
             for data in research_data
         ])
 
-    def _format_prompt(self, templates: Dict[str, str], research_summary: str) -> str:
-        formatted_agent_prompt = templates['agent_prompt'].format(
+    def _format_prompt(self, agent_prompt: str, research_data: List[Dict]) -> str:
+        research_summary = self._format_research_summary(research_data)
+        formatted_agent_prompt = agent_prompt.format(
             topic=self.agent.topic,
             today=datetime.now().strftime('%Y-%m-%d'),
-            disclaimer=templates['disclaimer']
+            disclaimer=self.templates['disclaimer']
         )
-        formatted_enhanced_prompt = templates['enhanced_prompt'].format(
+        formatted_enhanced_prompt = self.templates['enhanced_prompt'].format(
             research_summary=research_summary,
             topic=self.agent.topic
         )
