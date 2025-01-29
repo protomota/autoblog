@@ -108,7 +108,10 @@ class BlogAgent:
 
     @classmethod
     async def create(cls, agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
-        """Create a blog post using the specified agent."""
+        """Create a blog post using the specified agent.
+        Returns:
+            Tuple[bool, str, Optional[str], Optional[str]]: Returns (success, message, filepath, filename)
+        """
         try:
             # If it's a BLOG_ARTIST_RANDOM_PROMPT_ARTIST no image prompt is provided, generate one
             if agent_name == BLOG_ARTIST_RANDOM_PROMPT_ARTIST:
@@ -143,14 +146,14 @@ class BlogAgent:
                 filepath = await agent.save_to_obsidian_notes(filename, blog_page)
                     
                 if filepath:
-                    return True, "Blog post generated successfully", str(filepath)
+                    return True, "Blog post generated successfully", str(filepath), filename
                 else:
-                    return False, "Failed to save blog post", None
+                    return False, "Failed to save blog post", None, None
                 
         except Exception as e:
             error_msg = f"Error in blog generation: {str(e)}"
             logger.error(error_msg)
-            return False, error_msg, None
+            return False, error_msg, None, None
 
     def _validate_initialization(self):
         if not os.getenv('ANTHROPIC_API_KEY'):
