@@ -12,15 +12,13 @@ from PIL import Image
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
-from blogi.core.config import setup_logging, logger, AI_BLOG_SITE_STATIC_IMAGES_PATH, OBSIDIAN_AI_IMAGES_PATH
-from blogi.deployment.ai_deployment_manager import AIDeployManager
+from blogi.core.config import setup_logging, logger, BLOG_SITE_STATIC_IMAGES_PATH, OBSIDIAN_IMAGES_PATH
 
 app = Flask(__name__)
 logger = setup_logging()
 
 class MidjourneyWebhookHandler:
     def __init__(self):
-        self.deploy_manager = AIDeployManager()
         self.processed_urls = set()  # Add cache for processed URLs
 
     def verify_signature(self, payload, signature, secret):
@@ -62,8 +60,8 @@ class MidjourneyWebhookHandler:
                     f"{base_name}_{image_timestamp}_{position}.png",
                     f"{base_name}_{position}.png"
                 ]:
-                    ai_output_path = AI_BLOG_SITE_STATIC_IMAGES_PATH / filename
-                    obsidian_output_path = OBSIDIAN_AI_IMAGES_PATH / filename if OBSIDIAN_AI_IMAGES_PATH else None
+                    ai_output_path = BLOG_SITE_STATIC_IMAGES_PATH / filename
+                    obsidian_output_path = OBSIDIAN_IMAGES_PATH / filename if OBSIDIAN_IMAGES_PATH else None
                     try:
                         quadrant.save(ai_output_path)
                         logger.info(f"Saved: {ai_output_path}")
@@ -103,38 +101,19 @@ class MidjourneyWebhookHandler:
         """Process and save the image and prompt."""
         try:
             image_timestamp = os.getenv('IMAGE_TIMESTAMP')
-            # Create directory if it doesn't exist
-            AI_BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
-            
-            # Create AI blog paths and save files
-            dated_ai_paths = {
-                'image': AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.png",
-                'prompt': AI_BLOG_SITE_STATIC_IMAGES_PATH / f"{image_timestamp}.md"
-            }
-            self.save_prompt_to_file(prompt, dated_ai_paths['prompt'])
-            self.download_image(image_url, dated_ai_paths['image'])
             
             # Setup Obsidian paths and save files if enabled
-            dated_obsidian_paths = None
-            if OBSIDIAN_AI_IMAGES_PATH:
-                OBSIDIAN_AI_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
-                dated_obsidian_paths = {
-                    'image': OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.png",
-                    'prompt': OBSIDIAN_AI_IMAGES_PATH / f"{image_timestamp}.md"
-                }
-                self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
-                self.download_image(image_url, dated_obsidian_paths['image'])
+            OBSIDIAN_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+            dated_obsidian_paths = {
+                'image': OBSIDIAN_IMAGES_PATH / f"{image_timestamp}.png",
+                'prompt': OBSIDIAN_IMAGES_PATH / f"{image_timestamp}.md"
+            }
+            
+            self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
+            self.download_image(image_url, dated_obsidian_paths['image'])
             
             # Slice the image into quadrants
-            self.slice_and_save_images(dated_ai_paths['image'],
-                                       image_timestamp)
-            # Run deployment process
-            success = self.deploy_manager.build_hugo()
-            if success:
-                logger.info(f"Hugo built Successfully")
-            success = self.deploy_manager.git_operations()
-            if success:
-                logger.info(f"Git operations completed Successfully")
+            self.slice_and_save_images(dated_obsidian_paths['image'], image_timestamp)
             
         except Exception as e:
             logger.error(f"Error in save_image_and_prompt: {e}")

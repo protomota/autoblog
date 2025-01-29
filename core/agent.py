@@ -15,7 +15,7 @@ from blogi.services.brave_search_service import BraveSearchClient
 from blogi.core.web_service import WebService
 from blogi.generators.artist_post import ArtistPostGenerator
 from blogi.generators.researcher_post import ResearcherPostGenerator
-from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH, PROMPTS_DIR
+from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, OBSIDIAN_AI_POSTS_PATH, PROMPTS_DIR
 from blogi.services.process_image_service import ProcessImageService
 from blogi.utils.validation import verify_paths, check_dependencies
 from blogi.utils.path_utils import ensure_directory_structure
@@ -143,7 +143,7 @@ class BlogAgent:
                     return False, "Blog generation failed", None
 
                 filename, blog_page = result
-                filepath = await agent.save_to_content(filename, blog_page)
+                filepath = await agent.save_to_obsidian_notes(filename, blog_page)
                 
                 if not filepath:
                     return False, "Failed to save blog post", None
@@ -306,24 +306,19 @@ class BlogAgent:
             logger.error(f"Tags generation error: {str(e)}")
             return "[]"
         
-    async def save_to_content(self, filename: str, content: str) -> Optional[str]:
+    async def save_to_obsidian_notes(self, filename: str, content: str) -> Optional[str]:
         """Save content to an Post."""
         try:
-            AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
             OBSIDIAN_AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
             
-            ai_posts_filepath = AI_POSTS_PATH / filename
             obsidian_ai_posts_filepath = OBSIDIAN_AI_POSTS_PATH / filename
-            async with aiofiles.open(ai_posts_filepath, mode='w') as file:
-                await file.write(content)
             async with aiofiles.open(obsidian_ai_posts_filepath, mode='w') as file:
                 await file.write(content)
             
-            logger.info(f"Successfully saved to {ai_posts_filepath}")
             logger.info(f"Successfully saved to {obsidian_ai_posts_filepath}")
             # Output the file path in the format expected by deploy_manager
-            print(f"POST_FILE_PATH={ai_posts_filepath}")
-            return str(ai_posts_filepath)
+            print(f"POST_FILE_PATH={obsidian_ai_posts_filepath}")
+            return str(obsidian_ai_posts_filepath)
         except Exception as e:
             logger.error(f"Error saving to Posts: {str(e)}")
             return None

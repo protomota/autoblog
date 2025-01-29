@@ -24,12 +24,10 @@ from blogi.core.config import (
 
 # Debug mode flag - set to True to enable DEBUG logging
 DEBUG_MODE = False
-
-# Set base logging level based on DEBUG_MODE
 BASE_LOG_LEVEL = 'DEBUG' if DEBUG_MODE else 'INFO'
 
-# Configure logging
 def setup_logging():
+    """Configure logging."""
     logging.basicConfig(
         level=BASE_LOG_LEVEL,
         format='%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
@@ -37,34 +35,54 @@ def setup_logging():
     )
     return logging.getLogger(__name__)
 
-# Create logger instance
 logger = setup_logging()
 
-from .base_deployment_manager import BaseDeployManager
+class DeploymentManager:
+    def __init__(self, blog_type="human"):
+        self.logger = logger
+        self.changes_made = False
+        
+        # Set paths based on blog type
+        if blog_type == "human":
+            self.dest_path = HUMAN_POSTS_PATH
+            self.post_file_path = OBSIDIAN_HUMAN_POSTS_PATH
+            self.blog_url_base = HUMAN_BLOG_URL
+            self.blog_site_path = HUMAN_BLOG_SITE_PATH
+            self.images_source = OBSIDIAN_HUMAN_IMAGES_PATH
+            self.images_dest = HUMAN_BLOG_SITE_STATIC_IMAGES_PATH
+        else:
+            raise ValueError(f"Unsupported blog type: {blog_type}")
 
-class HumanDeployManager(BaseDeployManager):
-    def __init__(self):
-        super().__init__()
-        self.dest_path = HUMAN_POSTS_PATH
-        self.post_file_path = OBSIDIAN_HUMAN_POSTS_PATH
-        self.blog_url_base = HUMAN_BLOG_URL
+    def run_command(self, command: list[str], cwd: str = None) -> Tuple[bool, str]:
+        """Run a shell command and return success status and output."""
+        try:
+            process = subprocess.run(
+                command,
+                cwd=cwd,
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            return True, process.stdout
+        except subprocess.CalledProcessError as e:
+            return False, e.stderr
 
     def sync_images(self) -> bool:
         """Verify all images are properly synced."""
         try:
             self.logger.info("Verifying image sync:")
-            self.logger.info(f"  Source: {OBSIDIAN_HUMAN_IMAGES_PATH}")
-            self.logger.info(f"  Destination: {HUMAN_BLOG_SITE_STATIC_IMAGES_PATH}")
+            self.logger.info(f"  Source: {self.images_source}")
+            self.logger.info(f"  Destination: {self.images_dest}")
 
             # Validate directories
-            for directory in [HUMAN_POSTS_PATH, OBSIDIAN_HUMAN_IMAGES_PATH, HUMAN_BLOG_SITE_STATIC_IMAGES_PATH]:
+            for directory in [self.dest_path, self.images_source, self.images_dest]:
                 if not directory.exists():
                     self.logger.error(f"  Directory not found: {directory}")
                     raise FileNotFoundError(f"Directory not found: {directory}")
                 self.logger.debug(f"  ✓ Validated: {directory}")
 
-            # Verify all markdown files have correct image paths
-            md_files = list(HUMAN_POSTS_PATH.glob('*.md'))
+            # Verify markdown files
+            md_files = list(self.dest_path.glob('*.md'))
             self.logger.info(f"Verifying {len(md_files)} markdown files:")
 
             for filepath in md_files:
@@ -72,17 +90,17 @@ class HumanDeployManager(BaseDeployManager):
                 with open(filepath, "r") as file:
                     content = file.read()
                 
-                # Check for any remaining Obsidian-style links
+                # Check for unconverted links
                 obsidian_links = re.findall(r'\[\[([^]]*\.png)\]\]', content)
                 if obsidian_links:
                     self.logger.warning(f"    Found {len(obsidian_links)} unconverted image links!")
                 
-                # Verify all markdown-style images exist
+                # Verify markdown images
                 markdown_links = re.findall(r'!\[.*?\]\(/images/([^)]+)\)', content)
                 if markdown_links:
                     self.logger.info(f"    Found {len(markdown_links)} image references:")
                     for image in markdown_links:
-                        image_path = HUMAN_BLOG_SITE_STATIC_IMAGES_PATH / image
+                        image_path = self.images_dest / image
                         if image_path.exists():
                             self.logger.info(f"      ✓ {image_path}")
                         else:
@@ -91,7 +109,6 @@ class HumanDeployManager(BaseDeployManager):
                 else:
                     self.logger.info("    No images found")
 
-            self.logger.info("Image verification completed")
             return True
             
         except Exception as e:
@@ -102,28 +119,22 @@ class HumanDeployManager(BaseDeployManager):
     def sync_content(self) -> bool:
         """Sync content from Obsidian to Hugo."""
         try:
-            # Create destination directory if it doesn't exist
             self.dest_path.mkdir(parents=True, exist_ok=True)
             
-            # Get list of files and process them
-            source_files = [f for f in OBSIDIAN_HUMAN_POSTS_PATH.glob('*.md')]
+            source_files = [f for f in self.post_file_path.glob('*.md')]
             self.logger.info(f"Checking {len(source_files)} files for changes:")
             
             files_processed = 0
             for source_file in source_files:
                 self.logger.info(f"Checking file: {source_file.name}")
                 
-                # Check if file needs to be synced
-                dest_file = HUMAN_POSTS_PATH / source_file.name
+                dest_file = self.dest_path / source_file.name
 
-                # Read content to check for images
                 with open(source_file, "r") as file:
                     content = file.read()
                 
-                # Process images and update content
                 content = self._process_images(content, source_file)
                 
-                # Write processed content back
                 with open(source_file, "w") as file:
                     file.write(content)
                 with open(dest_file, "w") as file:
@@ -151,15 +162,13 @@ class HumanDeployManager(BaseDeployManager):
             self.logger.info(f"    Processing image: {image}")
             new_image_name = image.replace(' ', '_')
             
-            # Handle image in Obsidian folder
-            obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / image
-            new_obsidian_image = OBSIDIAN_HUMAN_IMAGES_PATH / new_image_name
+            obsidian_image = self.images_source / image
+            new_obsidian_image = self.images_source / new_image_name
             if obsidian_image.exists() and obsidian_image != new_obsidian_image:
                 obsidian_image.rename(new_obsidian_image)
                 self.logger.info(f"    ✓ Renamed Obsidian image: {image} -> {new_image_name}")
                 self.changes_made = True
             
-            # Update content with markdown-style link
             markdown_image = f"![Image](/images/{new_image_name})"
             content = content.replace(f"[[{image}]]", markdown_image)
             
@@ -172,6 +181,45 @@ class HumanDeployManager(BaseDeployManager):
             self.logger.error(f"Hugo build failed: {output}")
         return success
 
+    def git_operations(self, site_path: Path) -> bool:
+        """Handle all git operations."""
+        try:
+            self.run_command(['git', 'add', '.'], cwd=site_path)
+            
+            result = subprocess.run(['git', 'diff', '--cached', '--quiet'], 
+                                 cwd=site_path, 
+                                 capture_output=True)
+            
+            if result.returncode == 1:  # Changes exist
+                commit_message = f"New Blog Post on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                self.run_command(['git', 'commit', '-m', commit_message], cwd=site_path)
+                self.run_command(['git', 'push', 'origin', 'main'], cwd=site_path)
+                self.handle_branch_deployment(site_path)
+                
+            return True
+        except Exception as e:
+            self.logger.error(f"Git operations failed: {e}")
+            return False
+
+    def handle_branch_deployment(self, site_path: Path) -> bool:
+        """Handle branch deployment."""
+        try:
+            subprocess.run(['git', 'branch', '-D', 'deploy'], 
+                         cwd=site_path,
+                         stderr=subprocess.DEVNULL)
+            
+            self.run_command(['git', 'subtree', 'split', '--prefix', 'public', '-b', 'deploy'],
+                           cwd=site_path)
+            self.run_command(['git', 'push', 'origin', 'deploy:deploy', '--force'],
+                           cwd=site_path)
+            self.run_command(['git', 'branch', '-D', 'deploy'],
+                           cwd=site_path)
+            
+            return True
+        except Exception as e:
+            self.logger.error(f"Branch deployment failed: {e}")
+            return False
+
     def show_success_notification(self, no_changes=False):
         """Show success notification on macOS."""
         try:
@@ -182,20 +230,18 @@ class HumanDeployManager(BaseDeployManager):
 
 def main():
     """Main entry point for deployment process."""
-    deploy_manager = HumanDeployManager()
+    deploy_manager = DeploymentManager(blog_type="human")
     
-    # Run sync operations first
     if not all([
         deploy_manager.sync_content(),
         deploy_manager.sync_images()
     ]):
         return False
 
-    # Only proceed with build and git operations if changes were made
     if deploy_manager.changes_made:
         if all([
-            deploy_manager.build_hugo(HUMAN_BLOG_SITE_PATH),
-            deploy_manager.git_operations(HUMAN_BLOG_SITE_PATH)
+            deploy_manager.build_hugo(deploy_manager.blog_site_path),
+            deploy_manager.git_operations(deploy_manager.blog_site_path)
         ]):
             deploy_manager.show_success_notification()
             return True
@@ -208,4 +254,4 @@ def main():
 
 if __name__ == "__main__":
     success = main()
-    sys.exit(0 if success else 1)
+    sys.exit(0 if success else 1) 

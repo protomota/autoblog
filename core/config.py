@@ -20,8 +20,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", None)
 USERAPI_AI_API_KEY = os.getenv("USERAPI_AI_API_KEY", None)
 USERAPI_AI_ACCOUNT_HASH = os.getenv("USERAPI_AI_ACCOUNT_HASH", None)
 
-HUMAN_BLOG_URL = os.getenv("HUMAN_BLOG_URL", None)
-AI_BLOG_URL = os.getenv("AI_BLOG_URL", None)
+BLOG_URL = os.getenv("BLOG_URL", None)
 
 OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH", "")) if os.getenv("OBSIDIAN_NOTES_PATH") else None
 
@@ -29,19 +28,16 @@ OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH", "")) if os.getenv("O
 BLOGI_ROOT = PROJECT_ROOT / "blogi"
 sys.path.append(str(BLOGI_ROOT))
 
-AI_BLOG_SITE_PATH = PROJECT_ROOT / "ai_blog" if AI_BLOG_URL else None
-AI_BLOG_SITE_STATIC_IMAGES_PATH = AI_BLOG_SITE_PATH / "static" / "images" if AI_BLOG_SITE_PATH else None
-AI_POSTS_PATH = AI_BLOG_SITE_PATH / "content" / "posts" if AI_BLOG_SITE_PATH else None
+BLOG_SITE_PATH = PROJECT_ROOT / "my_blog"
+BLOG_SITE_STATIC_IMAGES_PATH = BLOG_SITE_PATH / "static" / "images"
+BLOG_POSTS_PATH = BLOG_SITE_PATH / "content" / "posts"
 # Fix the PROMPTS_DIR path - remove duplicate blogi
-PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts" if AI_BLOG_URL else None
+PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts"
 
-HUMAN_BLOG_SITE_PATH = PROJECT_ROOT / "human_blog"
-HUMAN_BLOG_SITE_STATIC_IMAGES_PATH = HUMAN_BLOG_SITE_PATH / "static" / "images"
-HUMAN_POSTS_PATH = HUMAN_BLOG_SITE_PATH / "content" / "posts"
 OBSIDIAN_AI_POSTS_PATH = OBSIDIAN_NOTES_PATH / "ai_posts"
-OBSIDIAN_AI_IMAGES_PATH = OBSIDIAN_AI_POSTS_PATH / "images"
-OBSIDIAN_HUMAN_POSTS_PATH = OBSIDIAN_NOTES_PATH / "posts"
-OBSIDIAN_HUMAN_IMAGES_PATH = OBSIDIAN_NOTES_PATH / "images"
+OBSIDIAN_AI_IMAGES = OBSIDIAN_AI_POSTS_PATH / "images"
+OBSIDIAN_POSTS_PATH = OBSIDIAN_NOTES_PATH / "posts"
+OBSIDIAN_IMAGES_PATH = OBSIDIAN_NOTES_PATH / "images"
 
 
 # Agent Types
