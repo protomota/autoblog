@@ -124,14 +124,15 @@ class BlogAgent:
                 else ResearcherPostGenerator(agent)
             )
             
-            # Call generate_blog_post instead of generate
-            result = await generator.generate_blog_post()
-            
-            if result:
-                return True, "Blog post generated successfully", result
-            else:
-                return False, "Failed to generate blog post", None
-            
+            # Call generate() instead of generate_blog_post()
+            async with agent:  # Use context manager to handle initialization and cleanup
+                result = await generator.generate()
+                
+                if result:
+                    return True, "Blog post generated successfully", result
+                else:
+                    return False, "Failed to generate blog post", None
+                
         except Exception as e:
             error_msg = f"Error in blog generation: {str(e)}"
             logger.error(error_msg)
@@ -242,12 +243,13 @@ class BlogAgent:
             return None
 
     async def generate_blog_post(self):
+        """Generate a blog post using the appropriate generator."""
         try:
             generator = (
                 ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
                 else ResearcherPostGenerator(self)
             )
-            return await generator.generate()
+            return await generator.generate()  # Use generate() instead of generate_blog_post()
         finally:
             await self.close()
     
