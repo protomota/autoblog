@@ -1,5 +1,5 @@
 # Core Framework
-Flask==3.0.0
+flask[async]>=2.0.0
 python-dotenv==1.0.0
 
 # Async Support
@@ -48,3 +48,6 @@ beautifulsoup4==4.12.3
 
 # AI/ML Integration
 anthropic==0.8.1
+
+# Web Server 
+hypercorn>=0.15.0  

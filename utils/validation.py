@@ -1,39 +1,58 @@
-import subprocess
+import shutil
 import logging
-from pathlib import Path
 import os
-
-# Configure logging
-from blogi.core.config import logger
+from pathlib import Path
+from blogi.core.config import logger, PROJECT_ROOT
 
 def check_dependencies() -> bool:
-    required_commands = ['git', 'rsync', 'python', 'hugo']
-    for cmd in required_commands:
-        if subprocess.run(['which', cmd], capture_output=True).returncode != 0:
-            logging.error(f"Missing dependency: {cmd}")
-            return False
+    """Check if all required dependencies are installed."""
+    logger.info("Checking system dependencies...")
+    
+    # List of required command-line tools
+    dependencies = [
+        'git',  # For version control
+        'hugo'  # For static site generation
+    ]
+    
+    missing_deps = []
+    
+    for dep in dependencies:
+        if shutil.which(dep) is None:
+            logger.error(f"Missing dependency: {dep}")
+            missing_deps.append(dep)
+        else:
+            logger.info(f"Found dependency: {dep}")
+    
+    if missing_deps:
+        logger.error(f"Missing dependencies: {', '.join(missing_deps)}")
+        return False
+    
+    logger.info("All dependencies found")
     return True
 
 def verify_paths(agent_name: str) -> bool:
-    try:
-        # Get the project root (two levels up from this file)
-        current_dir = Path(os.path.dirname(os.path.abspath(__file__)))
-        project_root = current_dir.parent.parent
-
-        required_paths = {
-            'base_prompts': project_root / "blogi" / "prompts" / agent_name,
-            'agent_prompt': project_root / "blogi" / "prompts" / agent_name / "agent_prompt.txt",
-            'enhanced_prompt': project_root / "blogi" / "prompts" / agent_name / "enhanced_prompt.txt",
-            'disclaimer': project_root / "blogi" / "prompts" / agent_name / "disclaimer.txt",
-            'five_words_prompt': project_root / "blogi" / "prompts" / "_common" / "five_word_summary.txt",
-            'summarize_content': project_root / "blogi" / "prompts" / "_common" / "summarize_content.txt"
-        }
-        
-        for name, path in required_paths.items():
-            if not path.exists():
-                logger.error(f"Required path not found: {path}")
+    """Verify that all required paths exist and create them if they don't."""
+    logger.info(f"Verifying paths for agent: {agent_name}")
+    
+    # Use absolute paths based on PROJECT_ROOT
+    required_paths = [
+        Path(PROJECT_ROOT) / "prompts" / agent_name,
+        Path(PROJECT_ROOT) / "content",
+        Path(PROJECT_ROOT) / "static"
+    ]
+    
+    for path in required_paths:
+        logger.info(f"Checking path: {path}")
+        if not path.exists():
+            logger.info(f"Creating directory: {path}")
+            try:
+                path.mkdir(parents=True, exist_ok=True)
+                logger.info(f"Successfully created directory: {path}")
+            except Exception as e:
+                logger.error(f"Failed to create directory {path}: {str(e)}")
                 return False
-        return True
-    except Exception as e:
-        logging.error(f"Path verification error: {str(e)}")
-        return False
+        else:
+            logger.info(f"Found existing path: {path}")
+    
+    logger.info("All required paths verified/created")
+    return True

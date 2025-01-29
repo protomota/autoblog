@@ -31,12 +31,26 @@ app = Flask(__name__, static_url_path='/static')
 
 executor = ThreadPoolExecutor(max_workers=3)
 
+# Add logging at application startup
+logger.info("=== Application Initialization Started ===")
+logger.info(f"Project root path: {PROJECT_ROOT}")
+logger.info(f"Python path: {os.environ['PYTHONPATH']}")
+logger.info("Loading Flask application and dependencies...")
+
 async def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
     """Execute the command using the Python deployment manager."""
+    logger.info("\n=== New Generation Command Started ===")
+    logger.info(f"Parameters received:")
+    logger.info(f"  - Agent Type: {agent_type}")
+    logger.info(f"  - Agent Name: {agent_name}")
+    logger.info(f"  - Topic: {topic}")
+    logger.info(f"  - Image Prompt: {image_prompt}")
+    logger.info(f"  - Webhook URL: {webhook_url}")
+    
     try:
+        logger.info("Importing deployment manager...")
         from blogi.deployment.ai_deployment_manager import AIDeployManager, main as deploy_main
         
-        # Get kwargs for main function
         kwargs = {
             'agent_type': agent_type,
             'agent_name': agent_name,
@@ -44,41 +58,66 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
             'image_prompt': image_prompt,
             'webhook_url': webhook_url
         }
+        logger.info(f"Initial kwargs configuration: {kwargs}")
         
         # Remove None values
+        original_kwargs_count = len(kwargs)
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
+        logger.info(f"Cleaned kwargs: {len(kwargs)} parameters (removed {original_kwargs_count - len(kwargs)} None values)")
         
-        # Run deployment process in a thread pool
+        logger.info("Initializing thread pool execution...")
         loop = asyncio.get_event_loop()
+        logger.info("Starting deployment main function...")
         success, error_message = await loop.run_in_executor(
             executor,
             partial(deploy_main, **kwargs)
         )
+        logger.info(f"Deployment main function completed")
+        logger.info(f"Result - Success: {success}")
+        logger.info(f"Result - Message: {error_message}")
         
         if not success:
+            logger.error("=== Deployment Failed ===")
+            logger.error(f"Error details: {error_message}")
             return False, f"Deployment failed: {error_message}", None
             
-        # Get blog URL if successful
         if success:
             try:
+                logger.info("Attempting to retrieve latest file URL...")
                 deploy_manager = AIDeployManager()
+                logger.info("AIDeployManager instantiated")
                 success, blog_url, error = await loop.run_in_executor(
                     executor,
                     deploy_manager.get_latest_file
                 )
+                logger.info(f"URL retrieval result - Success: {success}, URL: {blog_url}, Error: {error}")
+                
                 if success and blog_url:
+                    logger.info("=== Generation Process Completed Successfully ===")
                     return True, "Deployment completed successfully", blog_url
+                    
+                logger.error("Failed to get blog URL")
+                logger.error(f"Error details: {error}")
                 return False, f"Deployment completed but couldn't get URL: {error}", None
+                
             except Exception as url_error:
+                logger.error("=== Error During URL Retrieval ===")
+                logger.error(f"Error type: {type(url_error).__name__}")
+                logger.error(f"Error details: {str(url_error)}", exc_info=True)
                 return False, f"Deployment completed but failed to get blog URL: {str(url_error)}", None
             
+        logger.error("=== Deployment Failed with Unknown Error ===")
         return False, "Deployment failed: Unknown error occurred during deployment", None
         
     except Exception as e:
+        logger.error("=== System Error in Execute Generate Command ===")
+        logger.error(f"Error type: {type(e).__name__}")
+        logger.error(f"Error details: {str(e)}", exc_info=True)
         return False, f"Deployment system error: {str(e)}\nCheck if all required dependencies are installed and servers are running.", None
 
 @app.route('/')
 def index():
+    logger.info("Index page requested")
     return render_template('index.html', 
                          agent_types=BLOG_AGENT_TYPES,
                          agent_names=json.dumps(BLOG_AGENT_NAMES))
@@ -86,6 +125,7 @@ def index():
 @app.route('/run-ngrok', methods=['POST'])
 def run_ngrok():
     """Handle the NGROK server start request."""
+    logger.info("Starting NGROK server")
     apple_script = '''
     tell application "Terminal"
         activate
@@ -93,12 +133,18 @@ def run_ngrok():
     end tell
     '''
     
-    subprocess.run(['osascript', '-e', apple_script])
-    return "NGROK server started" 
+    try:
+        subprocess.run(['osascript', '-e', apple_script])
+        logger.info("NGROK server start command executed successfully")
+        return "NGROK server started"
+    except Exception as e:
+        logger.error(f"Failed to start NGROK server: {str(e)}", exc_info=True)
+        return f"Failed to start NGROK server: {str(e)}"
 
 @app.route('/run-midjourney', methods=['POST'])
 def run_midjourney():
     """Handle the midjourney server start request."""
+    logger.info("Starting Midjourney webhook server")
     
     apple_script = f'''
     tell application "Terminal"
@@ -107,19 +153,29 @@ def run_midjourney():
     end tell
     '''
     
-    subprocess.run(['osascript', '-e', apple_script])
-    return "Midjourney webhook server started" 
+    try:
+        subprocess.run(['osascript', '-e', apple_script])
+        logger.info("Midjourney webhook server start command executed successfully")
+        return "Midjourney webhook server started"
+    except Exception as e:
+        logger.error(f"Failed to start Midjourney webhook server: {str(e)}", exc_info=True)
+        return f"Failed to start Midjourney webhook server: {str(e)}"
 
 @app.route('/start_server', methods=['POST'])
 def start_server():
+    logger.info("Start server endpoint called")
     try:
         data = request.json
         command = data.get('command')
+        logger.info(f"Received command: {command}")
+        
         if not command:
+            logger.error("No command provided")
             return jsonify({'success': False, 'message': 'No command provided'})
 
         # Split the command safely
         args = shlex.split(command)
+        logger.info(f"Executing command with args: {args}")
 
         # Start the process in the background
         subprocess.Popen(
@@ -129,28 +185,38 @@ def start_server():
             text=True
         )
 
+        logger.info(f"Successfully started process: {command}")
         return jsonify({'success': True, 'message': f'Started {command}'})
     except Exception as e:
+        logger.error(f"Error starting server: {str(e)}", exc_info=True)
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/generate', methods=['POST'])
 async def generate():
     try:
+        logger.info("Generate endpoint called")
         data = request.get_json()
+        logger.info(f"Received data: {data}")
+        
         agent_type = data.get('agent_type')
         agent_name = data.get('agent_name')
+        logger.info(f"Agent type: {agent_type}, Agent name: {agent_name}")
         
         if agent_type == BLOG_RESEARCHER_AI_AGENT:
             topic = data.get('topic')
             if not topic:
+                logger.error("Topic is required for researcher agent but was not provided")
                 return jsonify({'success': False, 'message': 'Topic is required for researcher agent'})
+            logger.info(f"Executing researcher command with topic: {topic}")
             success, output, blog_url = await execute_generate_command(agent_type, agent_name, topic=topic)
         elif agent_type == BLOG_ARTIST_AI_AGENT:
             webhook_url = data.get('webhook_url')
             if not webhook_url:
+                logger.error("Webhook URL is required for artist agent but was not provided")
                 return jsonify({'success': False, 'message': 'Webhook URL is required for artist agent'})
             
             image_prompt = data.get('image_prompt', None)
+            logger.info(f"Executing artist command with prompt: {image_prompt}, webhook: {webhook_url}")
             success, output, blog_url = await execute_generate_command(
                 agent_type, 
                 agent_name, 
@@ -158,12 +224,14 @@ async def generate():
                 webhook_url=webhook_url
             )
 
+        logger.info(f"Command execution completed - Success: {success}, Output: {output}, URL: {blog_url}")
         return jsonify({
             'success': success,
             'message': output,
             'blog_url': blog_url
         })
     except Exception as e:
+        logger.error(f"Error in generate endpoint: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'message': f'Error: {str(e)}',
@@ -171,11 +239,19 @@ async def generate():
         })
 
 if __name__ == '__main__':
+    logger.info("\n=== Starting Application Server ===")
+    logger.info("Importing Hypercorn dependencies...")
     from hypercorn.config import Config
     from hypercorn.asyncio import serve
 
+    logger.info("Configuring Hypercorn...")
     config = Config()
     config.bind = ["0.0.0.0:9229"]
     config.use_reloader = True
+    
+    logger.info(f"Server configuration:")
+    logger.info(f"  - Bind address: {config.bind}")
+    logger.info(f"  - Reloader enabled: {config.use_reloader}")
+    logger.info("Starting server...")
     
     asyncio.run(serve(app, config))
