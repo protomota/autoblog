@@ -70,9 +70,8 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
         # Extract filename from filepath if it exists
         filename = Path(filepath).name if filepath else None
             
-        logger.info(f"Blog generation successful: {message}")
-        logger.info(f"Generated filename: {filename}")
-        return True, message, filepath, filename
+        logger.info(f"Command execution completed - Success: {success}, Output: {message}, Filename: {filename}, Filepath: {filepath}")
+        return success, message, filepath, filename
             
     except Exception as e:
         error_message = f"Error: {str(e)}"
