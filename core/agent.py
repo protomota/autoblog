@@ -8,6 +8,8 @@ from typing import Optional, Tuple
 from datetime import datetime
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
+from openai import OpenAI
+ # Make sure this import is at the top
 
 # Use absolute imports
 from blogi.services.anthropic_service import AnthropicService
@@ -104,66 +106,41 @@ class BlogAgent:
         self.summarize_content_path = self.common_prompts_path / "summarize_content.txt"
 
     @classmethod
-    async def create(cls, agent_name: str, agent_type: str, topic: Optional[str] = None,
-                    image_prompt: Optional[str] = None, webhook_url: Optional[str] = None) -> Tuple[bool, str, Optional[str]]:
-        """
-        Factory method to create and run a blog generation process.
-        Returns: (success, message, filepath, filename)
-        """
-        logger.info("\n=== Starting Blog Generation Process ===")
-        
+    async def create(cls, agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
+        """Create a blog post using the specified agent."""
         try:
-            # Initial checks
-            if not check_dependencies():
-                return False, "Dependency check failed", None
-            if not ensure_directory_structure():
-                return False, "Directory structure check failed", None
-            if not verify_paths(agent_name):
-                return False, "Path verification failed", None
-
-            # Initialize image service for artist agent if needed
-            if agent_type == BLOG_ARTIST_AI_AGENT:
-                if not image_prompt:
-                    prompt_service = OpenAIRandomImagePromptService()
-                    image_prompt = prompt_service.generate_random_image_prompt()
-                    logger.info(f"Generated random image prompt: {image_prompt}")
-                
-                logger.info("Initializing image service")
-                image_service = ProcessImageService(
-                    agent_name=agent_name,
-                    webhook_url=webhook_url,
-                    image_prompt=image_prompt
-                )
-
-            # Create and run agent
-            async with cls(
-                agent_name=agent_name,
+            # Create an instance of BlogAgent
+            agent = cls(
                 agent_type=agent_type,
+                agent_name=agent_name,
                 topic=topic,
                 image_prompt=image_prompt,
                 webhook_url=webhook_url
-            ) as agent:
-                result = await agent.generate_blog_post()
-                
-                if not result:
-                    return False, "Blog generation failed", None
-
-                filename, blog_page = result
-                filepath = await agent.save_to_obsidian_notes(filename, blog_page)
-                
-                if not filepath:
-                    return False, "Failed to save blog post", None
-
-                return True, "Blog post generated and saved successfully", filepath, filename
-
+            )
+            
+            # Generate the blog post using the appropriate generator
+            generator = (
+                ArtistPostGenerator(agent) if agent_type == BLOG_ARTIST_AI_AGENT
+                else ResearcherPostGenerator(agent)
+            )
+            
+            # Call generate_blog_post instead of generate
+            result = await generator.generate_blog_post()
+            
+            if result:
+                return True, "Blog post generated successfully", result
+            else:
+                return False, "Failed to generate blog post", None
+            
         except Exception as e:
-            logger.error(f"Error in blog generation: {str(e)}")
-            return False, f"Error: {str(e)}", None
+            error_msg = f"Error in blog generation: {str(e)}"
+            logger.error(error_msg)
+            return False, error_msg, None
 
     def _validate_initialization(self):
         if not os.getenv('ANTHROPIC_API_KEY'):
             raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
-        if self.agent_type not in ["blog_artist_ai_agent", "blog_researcher_ai_agent"]:
+        if self.agent_type not in [BLOG_ARTIST_AI_AGENT, BLOG_RESEARCHER_AI_AGENT]:
             raise ValueError(f"Invalid agent_type: {self.agent_type}")
 
     async def __aenter__(self):
@@ -195,7 +172,7 @@ class BlogAgent:
             if hasattr(self.anthropic, 'session'):
                 self.anthropic.session = await self.create_session()
             
-            if self.agent_type == "blog_researcher_ai_agent":
+            if self.agent_type == BLOG_RESEARCHER_AI_AGENT:
                 self.brave_client = BraveSearchClient()
                 self.brave_client.session = await self.create_session()
         except Exception as e:
@@ -247,7 +224,7 @@ class BlogAgent:
     async def run(self):
         try:
             generator = (
-                ArtistPostGenerator(self) if self.agent_type == "blog_artist_ai_agent"
+                ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
                 else ResearcherPostGenerator(self)
             )
             return await generator.generate()
@@ -267,7 +244,7 @@ class BlogAgent:
     async def generate_blog_post(self):
         try:
             generator = (
-                ArtistPostGenerator(self) if self.agent_type == "blog_artist_ai_agent"
+                ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
                 else ResearcherPostGenerator(self)
             )
             return await generator.generate()

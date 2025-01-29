@@ -1,42 +1,32 @@
 #!/bin/python3
 
-import openai
 import os
 import logging
+from openai import OpenAI
 
 # Configure logging
 from blogi.core.config import logger
 
 class OpenAIRandomImagePromptService:
 
-    def generate_random_image_prompt(self) -> str:
-        MODEL = "gpt-4"
-        api_key = os.environ.get("OPENAI_API_KEY")
-        openai.api_key = api_key
-
-        key_words_response = openai.chat.completions.create(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant. Help me generate 5 random words"},
-                {"role": "user", "content": "list the words in a comma delimited list"}
-            ]
+    def __init__(self):
+        self.client = OpenAI(
+            api_key=os.getenv('OPENAI_API_KEY')
         )
 
-        key_words = key_words_response.choices[0].message.content
-
-        payload = [
-            {"role": "system", "content": "You are a helpful assistant. Help me generate an AI image prompt!"},
-            {"role": "user", "content": f"create a detailed prompt of less than 30 words for these key words {key_words} returning only the prompt and no other text or quotation marks"}
-        ]
-
-        response = openai.chat.completions.create(
-            model=MODEL,
-            messages=payload
-        )
-
-        # Clean the response string by removing any surrounding quotes and extra whitespace
-        prompt = response.choices[0].message.content
-        prompt = prompt.strip()  # Remove leading/trailing whitespace
-        prompt = prompt.strip('"\'')  # Remove any surrounding single or double quotes
-
-        return prompt
+    async def generate_random_prompt(self):
+        try:
+            response = await self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[{
+                    "role": "system",
+                    "content": "You are a creative image prompt generator."
+                }, {
+                    "role": "user",
+                    "content": "Generate a creative and detailed image prompt for Midjourney."
+                }]
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"Error generating random prompt: {str(e)}")
+            return None

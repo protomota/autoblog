@@ -49,13 +49,19 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
     logger.info(f"  - Webhook URL: {webhook_url}")
     
     try:
-        success, message, filepath, filename = await BlogAgent.create(
-            agent_type=agent_type,
-            agent_name=agent_name,
-            topic=topic,
-            image_prompt=image_prompt,
-            webhook_url=webhook_url
-        )
+        # Explicitly catch the return values from BlogAgent.create
+        try:
+            success, message, filepath = await BlogAgent.create(
+                agent_type=agent_type,
+                agent_name=agent_name,
+                topic=topic,
+                image_prompt=image_prompt,
+                webhook_url=webhook_url
+            )
+        except Exception as e:
+            # If BlogAgent.create fails to return proper tuple
+            logger.error(f"Error in BlogAgent.create: {str(e)}")
+            return False, str(e), None, None
         
         if not success:
             logger.error(f"Blog generation failed: {message}")
@@ -67,10 +73,11 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
         logger.info(f"Blog generation successful: {message}")
         logger.info(f"Generated filename: {filename}")
         return True, message, filepath, filename
-        
+            
     except Exception as e:
-        logger.error(f"Error in generate command: {str(e)}")
-        return False, f"Error: {str(e)}", None, None
+        error_message = f"Error: {str(e)}"
+        logger.error(f"Error in generate command: {error_message}")
+        return False, error_message, None, None
 
 @app.route('/')
 def index():
