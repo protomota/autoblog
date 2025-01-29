@@ -12,6 +12,7 @@ from typing import Optional, Tuple
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
+# Configuration
 from blogi.core.config import (
     PROJECT_ROOT,
     BLOG_SITE_STATIC_IMAGES_PATH,

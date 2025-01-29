@@ -18,9 +18,9 @@ import subprocess
 import json
 import shlex
 
-# Now import blogi modules
-from blogi.core.config import logger
+# Configuration
 from blogi.core.config import (
+    logger,
     BLOG_AGENT_TYPES, 
     BLOG_AGENT_NAMES,
     BLOG_RESEARCHER_AI_AGENT, 

@@ -15,14 +15,20 @@ from blogi.services.brave_search_service import BraveSearchClient
 from blogi.core.web_service import WebService
 from blogi.generators.artist import ArtistPostGenerator
 from blogi.generators.researcher import ResearcherPostGenerator
-from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, OBSIDIAN_AI_POSTS_PATH, PROMPTS_DIR
 from blogi.services.process_image_service import ProcessImageService
 from blogi.utils.validation import verify_paths, check_dependencies
 from blogi.utils.path_utils import ensure_directory_structure
 from blogi.services.openai_random_image_prompt_service import OpenAIRandomImagePromptService
 
-# Configure logging
-from blogi.core.config import logger, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT
+# Configuration
+from blogi.core.config import (
+        logger, 
+        CLAUDE_MODEL, 
+        BLOG_RESEARCHER_AI_AGENT, 
+        BLOG_ARTIST_AI_AGENT, 
+        OBSIDIAN_AI_POSTS_PATH, 
+        PROMPTS_DIR
+    )
 
 class BlogAgent:
     def __init__(self, agent_name: str, agent_type: str, topic: Optional[str] = None, 

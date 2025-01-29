@@ -5,8 +5,8 @@ from pathlib import Path
 
 from blogi.services.midjourney_image_service import MidjourneyImageService
 
-# Configure logging
-from blogi.core.config import logger, PROMPTS_DIR, AI_BLOG_SITE_STATIC_IMAGES_PATH
+# Configuration
+from blogi.core.config import logger, PROMPTS_DIR
 
 class ProcessImageService:
 

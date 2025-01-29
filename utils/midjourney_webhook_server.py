@@ -12,7 +12,13 @@ from PIL import Image
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.append(str(PROJECT_ROOT.parent))
 
-from blogi.core.config import setup_logging, logger, BLOG_SITE_STATIC_IMAGES_PATH, OBSIDIAN_IMAGES_PATH
+# Configuration
+from blogi.core.config import (
+    setup_logging, 
+    logger, 
+    BLOG_SITE_STATIC_IMAGES_PATH, 
+    OBSIDIAN_IMAGES_PATH
+)
 
 app = Flask(__name__)
 logger = setup_logging()
@@ -108,7 +114,7 @@ class MidjourneyWebhookHandler:
                 'image': OBSIDIAN_IMAGES_PATH / f"{image_timestamp}.png",
                 'prompt': OBSIDIAN_IMAGES_PATH / f"{image_timestamp}.md"
             }
-            
+
             self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
             self.download_image(image_url, dated_obsidian_paths['image'])
             
