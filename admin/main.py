@@ -26,6 +26,7 @@ from blogi.core.config import (
     BLOG_RESEARCHER_AI_AGENT, 
     BLOG_ARTIST_AI_AGENT
 )
+from blogi.core.agent import BlogAgent
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -38,7 +39,7 @@ logger.info(f"Python path: {os.environ['PYTHONPATH']}")
 logger.info("Loading Flask application and dependencies...")
 
 async def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
-    """Execute the command using the Python deployment manager."""
+    """Execute the command using the BlogAgent directly."""
     logger.info("\n=== New Generation Command Started ===")
     logger.info(f"Parameters received:")
     logger.info(f"  - Agent Type: {agent_type}")
@@ -48,72 +49,26 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
     logger.info(f"  - Webhook URL: {webhook_url}")
     
     try:
-        logger.info("Importing deployment manager...")
-        from blogi.deployment.ai_deployment_manager import AIDeployManager, main as deploy_main
-        
-        kwargs = {
-            'agent_type': agent_type,
-            'agent_name': agent_name,
-            'topic': topic,
-            'image_prompt': image_prompt,
-            'webhook_url': webhook_url
-        }
-        logger.info(f"Initial kwargs configuration: {kwargs}")
-        
-        # Remove None values
-        original_kwargs_count = len(kwargs)
-        kwargs = {k: v for k, v in kwargs.items() if v is not None}
-        logger.info(f"Cleaned kwargs: {len(kwargs)} parameters (removed {original_kwargs_count - len(kwargs)} None values)")
-        
-        logger.info("Initializing thread pool execution...")
-        loop = asyncio.get_event_loop()
-        logger.info("Starting deployment main function...")
-        success, error_message = await loop.run_in_executor(
-            executor,
-            partial(deploy_main, **kwargs)
+        success, message, filepath = await BlogAgent.create(
+            agent_type=agent_type,
+            agent_name=agent_name,
+            topic=topic,
+            image_prompt=image_prompt,
+            webhook_url=webhook_url
         )
-        logger.info(f"Deployment main function completed")
-        logger.info(f"Result - Success: {success}")
-        logger.info(f"Result - Message: {error_message}")
         
         if not success:
-            logger.error("=== Deployment Failed ===")
-            logger.error(f"Error details: {error_message}")
-            return False, f"Deployment failed: {error_message}", None
+            logger.error(f"Blog generation failed: {message}")
+            return False, message, None
             
-        if success:
-            try:
-                logger.info("Attempting to retrieve latest file URL...")
-                deploy_manager = AIDeployManager()
-                logger.info("AIDeployManager instantiated")
-                success, blog_url, error = await loop.run_in_executor(
-                    executor,
-                    deploy_manager.get_latest_file
-                )
-                logger.info(f"URL retrieval result - Success: {success}, URL: {blog_url}, Error: {error}")
-                
-                if success and blog_url:
-                    logger.info("=== Generation Process Completed Successfully ===")
-                    return True, "Deployment completed successfully", blog_url
-                    
-                logger.error("Failed to get blog URL")
-                logger.error(f"Error details: {error}")
-                return False, f"Deployment completed but couldn't get URL: {error}", None
-                
-            except Exception as url_error:
-                logger.error("=== Error During URL Retrieval ===")
-                logger.error(f"Error type: {type(url_error).__name__}")
-                logger.error(f"Error details: {str(url_error)}", exc_info=True)
-                return False, f"Deployment completed but failed to get blog URL: {str(url_error)}", None
-            
-        logger.error("=== Deployment Failed with Unknown Error ===")
-        return False, "Deployment failed: Unknown error occurred during deployment", None
+        logger.info(f"Blog generation successful: {message}")
+        logger.info(f"Generated file: {filepath}")
+        
+        return True, message, filepath
         
     except Exception as e:
-        logger.error("=== System Error in Execute Generate Command ===")
-        logger.error(f"Error type: {type(e).__name__}")
-        logger.error(f"Error details: {str(e)}", exc_info=True)
-        return False, f"Deployment system error: {str(e)}\nCheck if all required dependencies are installed and servers are running.", None
+        logger.error(f"Error in generate command: {str(e)}")
+        return False, f"Error: {str(e)}", None
 
 @app.route('/')
 def index():

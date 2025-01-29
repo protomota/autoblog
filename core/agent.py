@@ -4,7 +4,8 @@ import anthropic
 import aiohttp
 import aiofiles
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple
+from datetime import datetime
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 
@@ -15,23 +16,36 @@ from blogi.core.web_service import WebService
 from blogi.generators.artist_post import ArtistPostGenerator
 from blogi.generators.researcher_post import ResearcherPostGenerator
 from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, AI_POSTS_PATH, OBSIDIAN_AI_POSTS_PATH, PROMPTS_DIR
+from blogi.services.process_image_service import ProcessImageService
+from blogi.utils.validation import verify_paths, check_dependencies
+from blogi.utils.path_utils import ensure_directory_structure
+from blogi.services.openai_random_image_prompt_service import OpenAIRandomImagePromptService
 
 # Configure logging
-from blogi.core.config import logger
+from blogi.core.config import logger, BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT
 
 class BlogAgent:
     def __init__(self, agent_name: str, agent_type: str, topic: Optional[str] = None, 
-                 image_prompt: Optional[str] = None, model: str = CLAUDE_MODEL):
+                 image_prompt: Optional[str] = None, webhook_url: Optional[str] = None,
+                 model: str = CLAUDE_MODEL):
         
-        # Initialize project root
+        logger.info("\n=== Initializing BlogAgent ===")
+        logger.info(f"Parameters:")
+        logger.info(f"  - Agent Name: {agent_name}")
+        logger.info(f"  - Agent Type: {agent_type}")
+        logger.info(f"  - Topic: {topic}")
+        logger.info(f"  - Image Prompt: {image_prompt}")
+        logger.info(f"  - Webhook URL: {webhook_url}")
+        
+        self._validate_agent_type(agent_type)
+        self._validate_requirements(agent_type, topic, webhook_url)
         
         self.web_service = WebService()
-        
-        # Basic attributes
         self.agent_name = agent_name
         self.agent_type = agent_type
         self.topic = topic
         self.image_prompt = image_prompt
+        self.webhook_url = webhook_url
         self.model = model
         
         # Initialize as None
@@ -40,12 +54,33 @@ class BlogAgent:
         self.brave_client = None
         self._is_closed = False
         
+        # Set up paths
+        self._setup_paths()
+        
+        # Validate initialization
+        self._validate_initialization()
+
+    def _validate_agent_type(self, agent_type: str):
+        """Validate the agent type."""
+        valid_types = [BLOG_RESEARCHER_AI_AGENT, BLOG_ARTIST_AI_AGENT]
+        if agent_type not in valid_types:
+            raise ValueError(f"Invalid agent_type: {agent_type}. Must be one of: {valid_types}")
+
+    def _validate_requirements(self, agent_type: str, topic: Optional[str], webhook_url: Optional[str]):
+        """Validate agent-specific requirements."""
+        if agent_type == BLOG_RESEARCHER_AI_AGENT and not topic:
+            raise ValueError("Topic is required for researcher agent")
+        if agent_type == BLOG_ARTIST_AI_AGENT and not webhook_url:
+            raise ValueError("Webhook URL is required for artist agent")
+
+    def _setup_paths(self):
+        """Set up all required paths."""
         # Set up paths for templates and prompts
         prompts_base = PROMPTS_DIR
-        agent_prompts = os.path.join(prompts_base, agent_name)
+        agent_prompts = os.path.join(prompts_base, self.agent_name)
         common_prompts = os.path.join(prompts_base, "_common")
 
-        # Set up paths
+        # Agent-specific paths
         self.agent_prompt_path = os.path.join(agent_prompts, "agent_prompt.txt")
         self.enhanced_prompt_path = os.path.join(agent_prompts, "enhanced_prompt.txt")
         self.disclaimer_path = os.path.join(agent_prompts, "disclaimer.txt")
@@ -61,9 +96,63 @@ class BlogAgent:
         self.title_prompt_path = self.common_prompts_path / "summarize_for_title.txt"
         self.five_words_prompt_path = self.common_prompts_path / "five_word_summary.txt"
         self.summarize_content_path = self.common_prompts_path / "summarize_content.txt"
+
+    @classmethod
+    async def create(cls, agent_name: str, agent_type: str, topic: Optional[str] = None,
+                    image_prompt: Optional[str] = None, webhook_url: Optional[str] = None) -> Tuple[bool, str, Optional[str]]:
+        """
+        Factory method to create and run a blog generation process.
+        Returns: (success, message, filepath)
+        """
+        logger.info("\n=== Starting Blog Generation Process ===")
         
-        # Validate initialization
-        self._validate_initialization()
+        try:
+            # Initial checks
+            if not check_dependencies():
+                return False, "Dependency check failed", None
+            if not ensure_directory_structure():
+                return False, "Directory structure check failed", None
+            if not verify_paths(agent_name):
+                return False, "Path verification failed", None
+
+            # Initialize image service for artist agent if needed
+            if agent_type == BLOG_ARTIST_AI_AGENT:
+                if not image_prompt:
+                    prompt_service = OpenAIRandomImagePromptService()
+                    image_prompt = prompt_service.generate_random_image_prompt()
+                    logger.info(f"Generated random image prompt: {image_prompt}")
+                
+                logger.info("Initializing image service")
+                image_service = ProcessImageService(
+                    agent_name=agent_name,
+                    webhook_url=webhook_url,
+                    image_prompt=image_prompt
+                )
+
+            # Create and run agent
+            async with cls(
+                agent_name=agent_name,
+                agent_type=agent_type,
+                topic=topic,
+                image_prompt=image_prompt,
+                webhook_url=webhook_url
+            ) as agent:
+                result = await agent.generate_blog_post()
+                
+                if not result:
+                    return False, "Blog generation failed", None
+
+                filename, blog_page = result
+                filepath = await agent.save_to_content(filename, blog_page)
+                
+                if not filepath:
+                    return False, "Failed to save blog post", None
+
+                return True, "Blog post generated and saved successfully", filepath
+
+        except Exception as e:
+            logger.error(f"Error in blog generation: {str(e)}")
+            return False, f"Error: {str(e)}", None
 
     def _validate_initialization(self):
         if not os.getenv('ANTHROPIC_API_KEY'):
