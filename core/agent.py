@@ -126,7 +126,6 @@ class BlogAgent:
             
             # Use context manager and call the appropriate method
             async with agent:  # Use context manager to handle initialization and cleanup
-                
                 result = await generator.generate_blog_post()
 
                 if result:
@@ -250,11 +249,7 @@ class BlogAgent:
                 ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
                 else ResearcherPostGenerator(self)
             )
-            
-            if self.agent_type == BLOG_ARTIST_AI_AGENT:
-                return await generator.generate()  # ArtistPostGenerator uses generate()
-            else:
-                return await generator.generate_blog_post()  # ResearcherPostGenerator uses generate_blog_post()
+            return await generator.generate_blog_post()  # Changed from generate() to generate_blog_post()
         finally:
             await self.close()
     
@@ -299,9 +294,21 @@ class BlogAgent:
     async def save_to_obsidian_notes(self, filename: str, content: str) -> Optional[str]:
         """Save content to an Post."""
         try:
+            # Ensure filename is a string
+            if isinstance(filename, tuple):
+                filename = filename[0] if filename else "default.md"
+            
+            # Ensure filename has .md extension
+            if not filename.endswith('.md'):
+                filename = f"{filename}.md"
+            
+            # Create directory if it doesn't exist
             OBSIDIAN_AI_POSTS_PATH.mkdir(parents=True, exist_ok=True)
             
+            # Create full filepath
             obsidian_ai_posts_filepath = OBSIDIAN_AI_POSTS_PATH / filename
+            
+            # Write content to file
             async with aiofiles.open(obsidian_ai_posts_filepath, mode='w') as file:
                 await file.write(content)
             
