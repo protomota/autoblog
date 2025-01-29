@@ -13,8 +13,8 @@ from contextlib import asynccontextmanager
 from blogi.services.anthropic_service import AnthropicService
 from blogi.services.brave_search_service import BraveSearchClient
 from blogi.core.web_service import WebService
-from blogi.generators.artist_post import ArtistPostGenerator
-from blogi.generators.researcher_post import ResearcherPostGenerator
+from blogi.generators.artist import ArtistPostGenerator
+from blogi.generators.researcher import ResearcherPostGenerator
 from blogi.core.config import CLAUDE_MODEL, PROJECT_ROOT, OBSIDIAN_AI_POSTS_PATH, PROMPTS_DIR
 from blogi.services.process_image_service import ProcessImageService
 from blogi.utils.validation import verify_paths, check_dependencies
