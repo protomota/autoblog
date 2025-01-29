@@ -14,12 +14,12 @@ sys.path.append(str(PROJECT_ROOT.parent))
 
 from blogi.core.config import (
     PROJECT_ROOT,
-    HUMAN_BLOG_SITE_STATIC_IMAGES_PATH,
-    OBSIDIAN_HUMAN_IMAGES_PATH,
-    HUMAN_BLOG_URL,
-    HUMAN_BLOG_SITE_PATH,
-    OBSIDIAN_HUMAN_POSTS_PATH,
-    HUMAN_POSTS_PATH
+    BLOG_SITE_STATIC_IMAGES_PATH,
+    OBSIDIAN_IMAGES_PATH,
+    BLOG_URL,
+    BLOG_SITE_PATH,
+    BLOG_SITE_POSTS_PATH,
+    OBSIDIAN_POSTS_PATH
 )
 
 # Debug mode flag - set to True to enable DEBUG logging
@@ -38,20 +38,16 @@ def setup_logging():
 logger = setup_logging()
 
 class DeploymentManager:
-    def __init__(self, blog_type="human"):
+    def __init__(self):
         self.logger = logger
         self.changes_made = False
-        
-        # Set paths based on blog type
-        if blog_type == "human":
-            self.dest_path = HUMAN_POSTS_PATH
-            self.post_file_path = OBSIDIAN_HUMAN_POSTS_PATH
-            self.blog_url_base = HUMAN_BLOG_URL
-            self.blog_site_path = HUMAN_BLOG_SITE_PATH
-            self.images_source = OBSIDIAN_HUMAN_IMAGES_PATH
-            self.images_dest = HUMAN_BLOG_SITE_STATIC_IMAGES_PATH
-        else:
-            raise ValueError(f"Unsupported blog type: {blog_type}")
+
+        self.dest_path = BLOG_SITE_POSTS_PATH
+        self.origin_path = OBSIDIAN_POSTS_PATH
+        self.blog_url_base = BLOG_URL
+        self.blog_site_path = BLOG_SITE_PATH
+        self.images_source = OBSIDIAN_IMAGES_PATH
+        self.images_dest = BLOG_SITE_STATIC_IMAGES_PATH
 
     def run_command(self, command: list[str], cwd: str = None) -> Tuple[bool, str]:
         """Run a shell command and return success status and output."""
@@ -121,7 +117,7 @@ class DeploymentManager:
         try:
             self.dest_path.mkdir(parents=True, exist_ok=True)
             
-            source_files = [f for f in self.post_file_path.glob('*.md')]
+            source_files = [f for f in self.origin_path.glob('*.md')]
             self.logger.info(f"Checking {len(source_files)} files for changes:")
             
             files_processed = 0
@@ -230,7 +226,7 @@ class DeploymentManager:
 
 def main():
     """Main entry point for deployment process."""
-    deploy_manager = DeploymentManager(blog_type="human")
+    deploy_manager = DeploymentManager()
     
     if not all([
         deploy_manager.sync_content(),

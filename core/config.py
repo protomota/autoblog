@@ -28,9 +28,11 @@ OBSIDIAN_NOTES_PATH = Path(os.getenv("OBSIDIAN_NOTES_PATH", "")) if os.getenv("O
 BLOGI_ROOT = PROJECT_ROOT / "blogi"
 sys.path.append(str(BLOGI_ROOT))
 
-BLOG_SITE_PATH = PROJECT_ROOT / "my_blog"
+BLOG_SITE_REPO = os.getenv("BLOG_SITE_REPO", "my_blog")
+
+BLOG_SITE_PATH = PROJECT_ROOT / BLOG_SITE_REPO
 BLOG_SITE_STATIC_IMAGES_PATH = BLOG_SITE_PATH / "static" / "images"
-BLOG_POSTS_PATH = BLOG_SITE_PATH / "content" / "posts"
+BLOG_SITE_POSTS_PATH = BLOG_SITE_PATH / "content" / "posts"
 # Fix the PROMPTS_DIR path - remove duplicate blogi
 PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts"
 
