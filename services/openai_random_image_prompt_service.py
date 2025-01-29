@@ -3,6 +3,7 @@
 import os
 import logging
 from openai import OpenAI
+from typing import Optional
 
 # Configure logging
 from blogi.core.config import logger
@@ -10,11 +11,14 @@ from blogi.core.config import logger
 class OpenAIRandomImagePromptService:
 
     def __init__(self):
-        self.client = OpenAI(
-            api_key=os.getenv('OPENAI_API_KEY')
-        )
+        # Initialize OpenAI client without proxies
+        self.client = OpenAI()  # This will use OPENAI_API_KEY from environment
 
-    async def generate_random_prompt(self):
+    async def generate_random_prompt(self) -> Optional[str]:
+        """Generate a random image prompt using OpenAI.
+        Returns:
+            Optional[str]: The generated prompt or None if generation fails
+        """
         try:
             response = await self.client.chat.completions.create(
                 model="gpt-4",
