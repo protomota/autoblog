@@ -28,7 +28,7 @@ class ResearcherPostGenerator:
             
         return templates
 
-    async def generate(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    async def generate_blog_post(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         try:
             self.templates = await self._load_templates()
             research_data = await self._gather_research()

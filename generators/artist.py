@@ -29,7 +29,7 @@ class ArtistPostGenerator:
             
         return templates
 
-    async def _generate_artist_post(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+    async def generate_blog_post(self) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         try:
             templates = await self._load_templates()
             image_paths = await self._generate_images()

@@ -124,10 +124,11 @@ class BlogAgent:
                 else ResearcherPostGenerator(agent)
             )
             
-            # Call generate() instead of generate_blog_post()
+            # Use context manager and call the appropriate method
             async with agent:  # Use context manager to handle initialization and cleanup
-                result = await generator.generate()
                 
+                result = await generator.generate_blog_post()
+
                 if result:
                     return True, "Blog post generated successfully", result
                 else:
@@ -249,7 +250,11 @@ class BlogAgent:
                 ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
                 else ResearcherPostGenerator(self)
             )
-            return await generator.generate()  # Use generate() instead of generate_blog_post()
+            
+            if self.agent_type == BLOG_ARTIST_AI_AGENT:
+                return await generator.generate()  # ArtistPostGenerator uses generate()
+            else:
+                return await generator.generate_blog_post()  # ResearcherPostGenerator uses generate_blog_post()
         finally:
             await self.close()
     
