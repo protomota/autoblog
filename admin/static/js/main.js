@@ -110,6 +110,7 @@ function updateFieldVisibility() {
     const topicField = document.getElementById('topic_field');
     const imageField = document.getElementById('image_field');
     const webhookUrlField = document.getElementById('webhook_url_field');
+    const serverSection = document.getElementById('server_section');
 
     // Clear values when agent name changes
     document.getElementById('image_prompt').value = '';
@@ -120,11 +121,13 @@ function updateFieldVisibility() {
         topicField.classList.remove('hidden');
         imageField.classList.add('hidden');
         webhookUrlField.classList.add('hidden');
+        serverSection.classList.add('hidden');
         document.getElementById('topic').required = true;
         document.getElementById('image_prompt').required = false;
         document.getElementById('webhook_url').required = false;
     } else if (agentType === 'blog_artist_ai_agent') {
         webhookUrlField.classList.remove('hidden');
+        serverSection.classList.remove('hidden');
         document.getElementById('webhook_url').required = true;
         
         if (agentName === 'random_prompt_artist') {

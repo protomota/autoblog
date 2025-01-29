@@ -59,7 +59,10 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
         
         if not success:
             logger.error(f"Blog generation failed: {message}")
-            return False, message, None
+            return False, message, None, None
+            
+        # Extract filename from filepath if it exists
+        filename = Path(filepath).name if filepath else None
             
         logger.info(f"Blog generation successful: {message}")
         logger.info(f"Generated filename: {filename}")
@@ -67,7 +70,7 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
         
     except Exception as e:
         logger.error(f"Error in generate command: {str(e)}")
-        return False, f"Error: {str(e)}", None
+        return False, f"Error: {str(e)}", None, None
 
 @app.route('/')
 def index():

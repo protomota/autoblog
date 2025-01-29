@@ -10,15 +10,7 @@
     <h1>🤖 AI Agent Post Generator</h1>
 
     <div class="container">
-        <h2>Step 1: Start Your Servers</h2>
-        <div class="server-buttons">
-            <button id="ngrokButton" class="server-button" type="button" onclick="runNGROKServer()">NGROK Server</button>
-            <button id="midjourneyButton" class="server-button" type="button" onclick="runMidjourneyServer()">Midjourney Webhook Server</button>
-        </div>
-    </div>
-
-    <div class="container">
-        <h2>Step 2: Configure Your Post</h2>
+        <h2>Configure Your Post</h2>
         <form id="generateForm">
             <div class="form-group">
                 <label for="agent_type">Select Agent Type</label>
@@ -47,6 +39,16 @@
                 <label for="image_prompt">Image Prompt</label>
                 <textarea id="image_prompt" name="image_prompt" placeholder="Enter image prompt here..."></textarea>
             </div>
+            
+            <!-- Server section moved here and made hideable -->
+            <div id="server_section" class="form-group hidden">
+                <label>Start Your Servers for Midjourney Webhook</label>
+                <div class="server-buttons">
+                    <button id="ngrokButton" class="server-button" type="button" onclick="runNGROKServer()">NGROK Server</button>
+                    <button id="midjourneyButton" class="server-button" type="button" onclick="runMidjourneyServer()">Midjourney Webhook Server</button>
+                </div>
+            </div>
+            
             <div id="webhook_url_field" class="form-group hidden">
                 <label for="webhook_url">Webhook URL (Get this from NGROK)</label>
                 <input type="url" id="webhook_url" name="webhook_url" placeholder="Enter webhook URL here...">
@@ -78,6 +80,5 @@
 
     <!-- Include the external JavaScript file -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-
 </body>
 </html>
