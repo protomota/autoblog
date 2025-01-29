@@ -126,10 +126,16 @@ class BlogAgent:
             
             # Use context manager and call the appropriate method
             async with agent:  # Use context manager to handle initialization and cleanup
+                # Both generators use generate_blog_post()
                 result = await generator.generate_blog_post()
-
-                if result:
-                    return True, "Blog post generated successfully", result
+                
+                if isinstance(result, tuple):
+                    filepath = result[0] if result else None
+                else:
+                    filepath = result
+                    
+                if filepath:
+                    return True, "Blog post generated successfully", str(filepath)
                 else:
                     return False, "Failed to generate blog post", None
                 
@@ -249,7 +255,7 @@ class BlogAgent:
                 ArtistPostGenerator(self) if self.agent_type == BLOG_ARTIST_AI_AGENT
                 else ResearcherPostGenerator(self)
             )
-            return await generator.generate_blog_post()  # Changed from generate() to generate_blog_post()
+            return await generator.generate_blog_post()  # Both generators use generate_blog_post()
         finally:
             await self.close()
     
