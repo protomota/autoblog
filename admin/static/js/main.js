@@ -203,10 +203,10 @@ document.addEventListener('DOMContentLoaded', () => {
         buttonSpinner.classList.remove('hidden');
         
         // Clear the blog URL container when starting new generation
-        const urlContainer = document.getElementById('blog-url-container');
+        const urlContainer = document.getElementById('filepath-container');
         urlContainer.classList.add('hidden');
-        document.getElementById('blog-url').href = '';
-        document.getElementById('blog-url').textContent = '';
+        document.getElementById('filepath').href = '';
+        document.getElementById('filepath').textContent = '';
         
         // Initialize console
         consoleLog.innerHTML = '';
@@ -292,12 +292,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     appendToConsole(consoleLog, successMessage, 'success');
                     
                     // Handle blog URL
-                    if (data.blog_url) {
-                        const urlLink = document.getElementById('blog-url');
-                        urlLink.href = data.blog_url;
-                        urlLink.textContent = data.blog_url;
+                    if (data.filepath) {
+                        const urlLink = document.getElementById('filepath');
+                        urlLink.href = data.filepath;
+                        urlLink.textContent = data.filepath;
                         urlContainer.classList.remove('hidden');
-                        appendToConsole(consoleLog, `Blog URL generated: ${data.blog_url}`);
+                        appendToConsole(consoleLog, `Blog Post generated: ${data.filepath}`);
                     }
                 } else {
                     throw new Error(data.message || 'Unknown server error');

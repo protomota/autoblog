@@ -163,7 +163,7 @@ async def generate():
                 logger.error("Topic is required for researcher agent but was not provided")
                 return jsonify({'success': False, 'message': 'Topic is required for researcher agent'})
             logger.info(f"Executing researcher command with topic: {topic}")
-            success, output, blog_url = await execute_generate_command(agent_type, agent_name, topic=topic)
+            success, output, filepath = await execute_generate_command(agent_type, agent_name, topic=topic)
         elif agent_type == BLOG_ARTIST_AI_AGENT:
             webhook_url = data.get('webhook_url')
             if not webhook_url:
@@ -172,25 +172,25 @@ async def generate():
             
             image_prompt = data.get('image_prompt', None)
             logger.info(f"Executing artist command with prompt: {image_prompt}, webhook: {webhook_url}")
-            success, output, blog_url = await execute_generate_command(
+            success, output, filepath = await execute_generate_command(
                 agent_type, 
                 agent_name, 
                 image_prompt=image_prompt,
                 webhook_url=webhook_url
             )
 
-        logger.info(f"Command execution completed - Success: {success}, Output: {output}, URL: {blog_url}")
+        logger.info(f"Command execution completed - Success: {success}, Output: {output}, URL: {filepath}")
         return jsonify({
             'success': success,
             'message': output,
-            'blog_url': blog_url
+            'filepath': filepath
         })
     except Exception as e:
         logger.error(f"Error in generate endpoint: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
             'message': f'Error: {str(e)}',
-            'blog_url': None
+            'filepath': None
         })
 
 if __name__ == '__main__':
