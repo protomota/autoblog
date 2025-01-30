@@ -113,14 +113,18 @@ class BlogAgent:
             Tuple[bool, str, Optional[str], Optional[str]]: Returns (success, message, filepath, filename)
         """
         try:
-            # If it's a BLOG_ARTIST_RANDOM_PROMPT_ARTIST no image prompt is provided, generate one
-            if agent_name == BLOG_ARTIST_RANDOM_PROMPT_ARTIST:
+            # If it's a BLOG_ARTIST_RANDOM_PROMPT_ARTIST and no image prompt is provided, generate one
+            if agent_name == BLOG_ARTIST_RANDOM_PROMPT_ARTIST and not image_prompt:
                 logger.info("No image prompt provided, generating random prompt...")
                 prompt_service = OpenAIRandomImagePromptService()
-                image_prompt = await prompt_service.generate_random_prompt()
-                if not image_prompt:
-                    raise ValueError("Failed to generate random image prompt")
-                logger.info(f"Generated random image prompt: {image_prompt}")
+                try:
+                    image_prompt = await prompt_service.generate_random_prompt()
+                    if not image_prompt:
+                        raise ValueError("Failed to generate random image prompt")
+                    logger.info(f"Generated random image prompt: {image_prompt}")
+                except Exception as e:
+                    logger.error(f"Error generating random prompt: {str(e)}")
+                    return False, "Failed to generate random prompt", None, None
             
             # Create an instance of BlogAgent
             agent = cls(
@@ -131,15 +135,15 @@ class BlogAgent:
                 webhook_url=webhook_url
             )
             
-            # Generate the blog post using the appropriate generator
-            generator = (
-                ArtistPostGenerator(agent) if agent_type == BLOG_ARTIST_AI_AGENT
-                else ResearcherPostGenerator(agent)
-            )
-            
-            # Use context manager and call the appropriate method
-            async with agent:  # Use context manager to handle initialization and cleanup
-                # Both generators now return (filename, blog_page)
+            # Use context manager to handle initialization and cleanup
+            async with agent:
+                # Generate the blog post using the appropriate generator
+                generator = (
+                    ArtistPostGenerator(agent) if agent_type == BLOG_ARTIST_AI_AGENT
+                    else ResearcherPostGenerator(agent)
+                )
+                
+                # Generate the blog post
                 filename, blog_page = await generator.generate_blog_post()
                 
                 # Save the blog post
@@ -205,25 +209,32 @@ class BlogAgent:
 
         errors = []
         try:
-            # Close all tracked sessions
-            for session in self.sessions:
-                try:
-                    if session and not session.closed:
-                        await session.close()
-                except Exception as e:
-                    errors.append(f"Error closing session: {str(e)}")
-            
+            # First cleanup higher-level services that depend on sessions
             if self.anthropic:
                 try:
                     await self.anthropic.cleanup()
                 except Exception as e:
                     errors.append(f"Error cleaning up anthropic: {str(e)}")
-            
+                self.anthropic = None
+
             if self.brave_client and hasattr(self.brave_client, 'cleanup'):
                 try:
                     await self.brave_client.cleanup()
                 except Exception as e:
                     errors.append(f"Error cleaning up brave client: {str(e)}")
+                self.brave_client = None
+
+            # Then close all tracked sessions
+            for session in self.sessions:
+                if session and not session.closed:
+                    try:
+                        await session.close()
+                    except RuntimeError as e:
+                        if "Event loop is closed" not in str(e):
+                            errors.append(f"Error closing session: {str(e)}")
+                    except Exception as e:
+                        errors.append(f"Error closing session: {str(e)}")
+
         except Exception as e:
             errors.append(f"Error during cleanup: {str(e)}")
         finally:
@@ -231,8 +242,6 @@ class BlogAgent:
                 logger.error("Cleanup errors occurred:\n" + "\n".join(errors))
             self._is_closed = True
             self.sessions = []
-            self.anthropic = None
-            self.brave_client = None
 
     async def process(self):
         """Main processing method."""

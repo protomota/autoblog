@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 import os
 from pathlib import Path
+import aiohttp
 
 from blogi.services.midjourney_image_service import MidjourneyImageService
 
@@ -48,3 +49,37 @@ class ProcessImageService:
         except Exception as e:
             logger.error(f"Error in _get_image_and_description: {str(e)}")
             raise
+
+    def __init__(self):
+        """Initialize the image processing service."""
+        self.session: Optional[aiohttp.ClientSession] = None
+
+    async def setup(self):
+        """Set up the service session."""
+        if not self.session or self.session.closed:
+            self.session = aiohttp.ClientSession()
+
+    async def process_image(self, image_url: str) -> Optional[str]:
+        """Process an image from the given URL.
+        Args:
+            image_url (str): The URL of the image to process
+        Returns:
+            Optional[str]: The processed image data or None if processing fails
+        """
+        if not self.session:
+            await self.setup()
+
+        try:
+            async with self.session.get(image_url) as response:
+                if response.status == 200:
+                    return await response.text()
+                logger.error(f"HTTP error {response.status} for image URL: {image_url}")
+                return None
+        except Exception as e:
+            logger.error(f"Error processing image from {image_url}: {str(e)}")
+            return None
+
+    async def cleanup(self):
+        """Clean up resources."""
+        if self.session and not self.session.closed:
+            await self.session.close()

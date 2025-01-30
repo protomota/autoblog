@@ -12,7 +12,7 @@ class OpenAIRandomImagePromptService:
 
     def __init__(self):
         # Use AsyncOpenAI instead of OpenAI
-        self.client = AsyncOpenAI()  # This will use OPENAI_API_KEY from environment
+        self.client = AsyncOpenAI()  # No proxies argument
 
     async def generate_random_prompt(self) -> Optional[str]:
         """Generate a random image prompt using OpenAI.

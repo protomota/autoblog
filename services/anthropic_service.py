@@ -1,10 +1,9 @@
-from anthropic import AsyncAnthropic
+import anthropic
+from anthropic import HUMAN_PROMPT, AI_PROMPT
+import aiohttp
 from typing import Optional
 import logging
 import os
-import aiohttp
-
-# Configure logging
 from blogi.core.config import logger
 
 class AnthropicService:
@@ -14,8 +13,7 @@ class AnthropicService:
             model (str): The model to use for completions
         """
         self.model = model
-        # Initialize AsyncAnthropic without proxies
-        self.client = AsyncAnthropic()
+        self.client = anthropic.AsyncAnthropic()
         self.session = None
         self._is_closed = False
 
@@ -29,13 +27,16 @@ class AnthropicService:
         if self._is_closed:
             raise RuntimeError("Service has been closed")
             
+        # Wrap user prompt so it starts with the correct token.
+        anthropic_prompt = f"{HUMAN_PROMPT} {prompt.strip()} {AI_PROMPT}"
+        
         try:
-            response = await self.client.messages.create(
+            response = await self.client.completions.create(
                 model=self.model,
-                max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}]
+                prompt=anthropic_prompt,
+                max_tokens_to_sample=300
             )
-            return response.content[0].text
+            return response.completion
         except Exception as e:
             logger.error(f"Error in Anthropic API call: {str(e)}")
             return ""
