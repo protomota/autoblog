@@ -108,7 +108,7 @@ class MidjourneyWebhookHandler:
         """Process and save the image and prompt."""
         try:
             # Generate Unix timestamp if not provided in environment
-            image_timestamp = os.getenv('IMAGE_TIMESTAMP') or str(int(datetime.now().timestamp()))
+            image_timestamp = os.getenv('IMAGE_TIMESTAMP') or "0000000000"
             logger.info(f"Image timestamp: {image_timestamp}")
             
             # Create directories if they don't exist
