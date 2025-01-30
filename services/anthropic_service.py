@@ -1,5 +1,5 @@
 import anthropic
-from anthropic import HUMAN_PROMPT, AI_PROMPT
+from anthropic import AI_PROMPT, HUMAN_PROMPT
 import aiohttp
 from typing import Optional
 import logging
@@ -18,25 +18,20 @@ class AnthropicService:
         self._is_closed = False
 
     async def ask(self, prompt: str) -> str:
-        """Send a prompt to the Anthropic API and get a response.
-        Args:
-            prompt (str): The prompt to send
-        Returns:
-            str: The response from the API
-        """
+        """Send a prompt to the Anthropic API using the Messages API."""
         if self._is_closed:
             raise RuntimeError("Service has been closed")
-            
-        # Wrap user prompt so it starts with the correct token.
-        anthropic_prompt = f"{HUMAN_PROMPT} {prompt.strip()} {AI_PROMPT}"
-        
+
         try:
-            response = await self.client.completions.create(
+            response = await self.client.messages.create(
                 model=self.model,
-                prompt=anthropic_prompt,
-                max_tokens_to_sample=300
+                system="You are a helpful assistant.",
+                messages=[
+                    {"role": "user", "content": prompt.strip()},
+                ],
+                max_tokens=300
             )
-            return response.completion
+            return response.content[0].text
         except Exception as e:
             logger.error(f"Error in Anthropic API call: {str(e)}")
             return ""

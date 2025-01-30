@@ -45,7 +45,7 @@ class ProcessImageService:
 
             # Run the service
             midjourney_service = MidjourneyImageService(api_key=api_key, account_hash=account_hash, prompt=self.image_prompt, webhook_url=self.webhook_url)
-            midjourney_service.run()
+            midjourney_service.run_async()
         except Exception as e:
             logger.error(f"Error in _get_image_and_description: {str(e)}")
             raise
@@ -83,3 +83,16 @@ class ProcessImageService:
         """Clean up resources."""
         if self.session and not self.session.closed:
             await self.session.close()
+
+# Example usage:
+async def generate_blog_image(prompt: str, webhook_url: str) -> bool:
+    image_service = ProcessImageService(
+        image_prompt=prompt,
+        webhook_url=webhook_url
+    )
+    
+    try:
+        success = await image_service.generate_image()
+        return success
+    finally:
+        await image_service.cleanup()

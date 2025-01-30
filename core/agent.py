@@ -21,6 +21,7 @@ from blogi.services.process_image_service import ProcessImageService
 from blogi.utils.validation import verify_paths, check_dependencies
 from blogi.utils.path_utils import ensure_directory_structure
 from blogi.services.openai_random_image_prompt_service import OpenAIRandomImagePromptService
+from blogi.services.midjourney_image_service import MidjourneyImageService
 
 # Configuration
 from blogi.core.config import (
@@ -32,6 +33,26 @@ from blogi.core.config import (
         PROMPTS_DIR,
         BLOG_ARTIST_RANDOM_PROMPT_ARTIST
     )
+
+async def generate_blog_image(image_prompt: str, webhook_url: str) -> None:
+    """Generate blog image using Midjourney service."""
+    if not image_prompt or not webhook_url:
+        return
+        
+    try:
+        # Need to get these from environment or config
+        api_key = os.getenv('MIDJOURNEY_API_KEY')
+        account_hash = os.getenv('MIDJOURNEY_ACCOUNT_HASH')
+        
+        image_service = MidjourneyImageService(
+            api_key=api_key,
+            account_hash=account_hash,
+            prompt=image_prompt,
+            webhook_url=webhook_url
+        )
+        await image_service.run_async()
+    except Exception as e:
+        logger.error(f"Error generating blog image: {str(e)}")
 
 class BlogAgent:
     def __init__(self, agent_name: str, agent_type: str, topic: Optional[str] = None, 
@@ -126,6 +147,9 @@ class BlogAgent:
                     logger.error(f"Error generating random prompt: {str(e)}")
                     return False, "Failed to generate random prompt", None, None
             
+            # Generate the image
+            await generate_blog_image(image_prompt, webhook_url)
+
             # Create an instance of BlogAgent
             agent = cls(
                 agent_type=agent_type,

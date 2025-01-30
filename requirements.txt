@@ -46,10 +46,11 @@ Pillow==10.2.0
 # HTML parsing library
 beautifulsoup4==4.12.3
 
-# AI/ML Integration
-anthropic==0.8.1
+# AI/ML Integration - Anthropic
+anthropic>=0.18.0 
 
-# Web Server 
+# Web Server    
 hypercorn>=0.15.0
 
+# HTTP Client
 httpx==0.27.2
