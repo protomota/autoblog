@@ -109,6 +109,7 @@ class MidjourneyWebhookHandler:
         try:
             # Generate Unix timestamp if not provided in environment
             image_timestamp = os.getenv('IMAGE_TIMESTAMP') or str(int(datetime.now().timestamp()))
+            logger.info(f"Image timestamp: {image_timestamp}")
             
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
@@ -151,9 +152,6 @@ def webhook_handler_route():
             if data['status'] == 'done':
                 image_url = data.get('result', {}).get('url')
                 prompt = data.get('prompt') or data.get('result', {}).get('prompt') or "No prompt available"
-                
-                # Set timestamp from payload or generate new one
-                os.environ['IMAGE_TIMESTAMP'] = data.get('timestamp') or datetime.now().strftime('%Y%m%d_%H%M%S')
                 
                 if image_url:
                     # Check if we've already processed this URL
