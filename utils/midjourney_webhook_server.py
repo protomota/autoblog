@@ -107,8 +107,8 @@ class MidjourneyWebhookHandler:
     def save_image_and_prompt(self, image_url, prompt):
         """Process and save the image and prompt."""
         try:
-            # Generate timestamp if not provided in environment
-            image_timestamp = os.getenv('IMAGE_TIMESTAMP') or datetime.now().strftime('%Y%m%d_%H%M%S')
+            # Generate Unix timestamp if not provided in environment
+            image_timestamp = os.getenv('IMAGE_TIMESTAMP') or str(int(datetime.now().timestamp()))
             
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
