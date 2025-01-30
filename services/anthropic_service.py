@@ -1,4 +1,4 @@
-import anthropic
+from anthropic import AsyncAnthropic
 from typing import Optional
 import logging
 import os
@@ -9,31 +9,39 @@ from blogi.core.config import logger
 
 class AnthropicService:
     def __init__(self, model: str):
-        self.client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
+        """Initialize the Anthropic service.
+        Args:
+            model (str): The model to use for completions
+        """
         self.model = model
+        # Initialize AsyncAnthropic without proxies
+        self.client = AsyncAnthropic()
         self.session = None
         self._is_closed = False
 
-    async def ask(self, prompt: str) -> Optional[str]:
-        """Send a prompt to Claude and get a response."""
+    async def ask(self, prompt: str) -> str:
+        """Send a prompt to the Anthropic API and get a response.
+        Args:
+            prompt (str): The prompt to send
+        Returns:
+            str: The response from the API
+        """
         if self._is_closed:
             raise RuntimeError("Service has been closed")
             
         try:
-            message = self.client.messages.create(
+            response = await self.client.messages.create(
                 model=self.model,
                 max_tokens=4096,
                 messages=[{"role": "user", "content": prompt}]
             )
-            if message and message.content:
-                return message.content[0].text
-            return None
+            return response.content[0].text
         except Exception as e:
-            logger.error(f"Error in AnthropicService.ask: {str(e)}")
-            return None
+            logger.error(f"Error in Anthropic API call: {str(e)}")
+            return ""
 
     async def cleanup(self):
-        """Cleanup any resources."""
+        """Cleanup resources."""
         if self._is_closed:
             return
             
