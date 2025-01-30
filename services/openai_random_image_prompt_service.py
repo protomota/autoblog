@@ -2,7 +2,7 @@
 
 import os
 import logging
-from openai import OpenAI
+from openai import AsyncOpenAI
 from typing import Optional
 
 # Configure logging
@@ -11,8 +11,8 @@ from blogi.core.config import logger
 class OpenAIRandomImagePromptService:
 
     def __init__(self):
-        # Initialize OpenAI client without proxies
-        self.client = OpenAI()  # This will use OPENAI_API_KEY from environment
+        # Use AsyncOpenAI instead of OpenAI
+        self.client = AsyncOpenAI()  # This will use OPENAI_API_KEY from environment
 
     async def generate_random_prompt(self) -> Optional[str]:
         """Generate a random image prompt using OpenAI.
@@ -30,7 +30,9 @@ class OpenAIRandomImagePromptService:
                     "content": "Generate a creative and detailed image prompt for Midjourney."
                 }]
             )
-            return response.choices[0].message.content
+            if response and response.choices:
+                return response.choices[0].message.content
+            return None
         except Exception as e:
             logger.error(f"Error generating random prompt: {str(e)}")
             return None
