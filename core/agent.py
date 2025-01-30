@@ -41,8 +41,8 @@ async def generate_blog_image(image_prompt: str, webhook_url: str) -> None:
         
     try:
         # Need to get these from environment or config
-        api_key = os.getenv('MIDJOURNEY_API_KEY')
-        account_hash = os.getenv('MIDJOURNEY_ACCOUNT_HASH')
+        api_key = os.getenv('USERAPI_AI_API_KEY')
+        account_hash = os.getenv('USERAPI_AI_ACCOUNT_HASH')
         
         image_service = MidjourneyImageService(
             api_key=api_key,

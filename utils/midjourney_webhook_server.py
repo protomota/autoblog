@@ -5,6 +5,7 @@ import os
 import requests
 from pathlib import Path
 import sys
+from datetime import datetime
 
 from PIL import Image
 
@@ -106,13 +107,18 @@ class MidjourneyWebhookHandler:
     def save_image_and_prompt(self, image_url, prompt):
         """Process and save the image and prompt."""
         try:
-            image_timestamp = os.getenv('IMAGE_TIMESTAMP')
+            # Generate timestamp if not provided in environment
+            image_timestamp = os.getenv('IMAGE_TIMESTAMP') or datetime.now().strftime('%Y%m%d_%H%M%S')
             
-            # Setup Obsidian paths and save files if enabled
-            OBSIDIAN_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+            # Create directories if they don't exist
+            BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+            if OBSIDIAN_IMAGES_PATH:
+                OBSIDIAN_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+            
+            # Setup paths and save files
             dated_obsidian_paths = {
-                'image': OBSIDIAN_IMAGES_PATH / f"{image_timestamp}.png",
-                'prompt': OBSIDIAN_IMAGES_PATH / f"{image_timestamp}.md"
+                'image': OBSIDIAN_IMAGES_PATH / f"midjourney_{image_timestamp}.png",
+                'prompt': OBSIDIAN_IMAGES_PATH / f"midjourney_{image_timestamp}.md"
             }
 
             self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
@@ -146,6 +152,9 @@ def webhook_handler_route():
                 image_url = data.get('result', {}).get('url')
                 prompt = data.get('prompt') or data.get('result', {}).get('prompt') or "No prompt available"
                 
+                # Set timestamp from payload or generate new one
+                os.environ['IMAGE_TIMESTAMP'] = data.get('timestamp') or datetime.now().strftime('%Y%m%d_%H%M%S')
+                
                 if image_url:
                     # Check if we've already processed this URL
                     if webhook_handler.has_been_processed(image_url):
@@ -154,7 +163,7 @@ def webhook_handler_route():
 
                     logger.info(f"QUAD Image generation completed. URL: {image_url}")
                     webhook_handler.save_image_and_prompt(image_url, prompt)
-                    webhook_handler.mark_as_processed(image_url)  # Mark as processed after successful save
+                    webhook_handler.mark_as_processed(image_url)
                     return jsonify({'status': 'success', 'image_url': image_url}), 200
                 else:
                     logger.error("Image URL not found in response")

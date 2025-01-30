@@ -52,6 +52,9 @@ BLOG_ARTIST_RANDOM_PROMPT_ARTIST = "random_prompt_artist"
 
 # API Config
 CLAUDE_MODEL = "claude-3-haiku-20240307"
+    
+USERAPI_AI_API_BASE_URL = "https://api.userapi.ai/midjourney/v2"   
+
 BRAVE_SEARCH_TIMEOUT = 30
 MAX_SEARCH_RESULTS = 3
 
