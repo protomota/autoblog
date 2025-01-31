@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 # Configure logging
-from blogi.core.config import logger, PROJECT_ROOT
+from blogi.core.config import logger, PROJECT_ROOT, IMAGE_TIMESTAMP, update_image_timestamp
 
 class ArtistPostGenerator:
     def __init__(self, agent):
@@ -36,7 +36,7 @@ class ArtistPostGenerator:
         """
         try:
             templates = await self._load_templates()
-            image_paths = await self._generate_images()
+            image_paths = await self._generate_image_file_paths()
             gallery_code = self._create_gallery_code(image_paths)
             
             blog_content = await self.agent.anthropic.ask(
@@ -59,16 +59,16 @@ class ArtistPostGenerator:
             return "error.md", f"Error generating post: {str(e)}"
 
     async def _generate_image_file_paths(self) -> Dict[str, str]:
-        image_timestamp = str(int(datetime.now().timestamp()))
-        os.environ['IMAGE_TIMESTAMP'] = image_timestamp
+        new_timestamp = str(int(datetime.now().timestamp()))
+        update_image_timestamp(new_timestamp)
         
-        logger.info(f"SAVED IMAGE_TIMESTAMP: {image_timestamp}")
-
+        logger.info(f"SAVED IMAGE_TIMESTAMP: {IMAGE_TIMESTAMP}")
+        
         return {
-            'top_left': f"images/{image_timestamp}_top_left.png",
-            'top_right': f"images/{image_timestamp}_top_right.png",
-            'bottom_left': f"images/{image_timestamp}_bottom_left.png",
-            'bottom_right': f"images/{image_timestamp}_bottom_right.png"
+            'top_left': f"images/midjourney_{IMAGE_TIMESTAMP}_top_left.png",
+            'top_right': f"images/midjourney_{IMAGE_TIMESTAMP}_top_right.png",
+            'bottom_left': f"images/midjourney_{IMAGE_TIMESTAMP}_bottom_left.png",
+            'bottom_right': f"images/midjourney_{IMAGE_TIMESTAMP}_bottom_right.png"
         }
     
     def _create_gallery_code(self, image_paths: Dict[str, str]) -> str:

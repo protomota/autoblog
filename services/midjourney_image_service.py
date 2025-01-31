@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 # Configure logging
-from blogi.core.config import logger, USERAPI_AI_API_BASE_URL
+from blogi.core.config import logger, USERAPI_AI_API_BASE_URL, IMAGE_TIMESTAMP
 
 class MidjourneyImageService:
     # Add API base URL as a class constant
@@ -14,9 +14,11 @@ class MidjourneyImageService:
         self.api_key = api_key
         self.account_hash = account_hash
         self.prompt = prompt
-        # Ensure webhook URL ends with /imagine/webhook
-        self.webhook_url = webhook_url.rstrip('/') + '/imagine/webhook'
+        # Add timestamp to webhook URL as query parameter
+        webhook_base = webhook_url.rstrip('/') + '/imagine/webhook'
+        self.webhook_url = f"{webhook_base}?image_timestamp={IMAGE_TIMESTAMP}"
         logger.info(f"INIT MidjourneyImageService WITH WEBHOOK URL: {self.webhook_url}")
+        breakpoint()
         self.headers = {
             "api-key": self.api_key,
             "Content-Type": "application/json"
@@ -52,16 +54,13 @@ class MidjourneyImageService:
         """Make the initial request to generate a QUAD image asynchronously"""
         
         logger.info(f"Make the initial request to generate a QUAD image WITH WEBHOOK URL: {self.webhook_url}")
-
-        image_timestamp = os.getenv('IMAGE_TIMESTAMP')
         
         payload = {
             "prompt": self.prompt,
             "webhook_url": self.webhook_url,
             "webhook_type": "progress",
             "account_hash": self.account_hash,
-            "is_disable_prefilter": True,
-            "image_timestamp": image_timestamp  # Add timestamp to payload
+            "is_disable_prefilter": True
         }
         logger.info(f"\n\n++++++++++++\n\npayload: {payload}\n\n++++++++++++\n\n")
         

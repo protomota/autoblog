@@ -50,6 +50,8 @@ BLOG_RESEARCHER_TOPIC_RESEARCHER = "topic_researcher"
 BLOG_ARTIST_PROMPT_ARTIST = "prompt_artist"
 BLOG_ARTIST_RANDOM_PROMPT_ARTIST = "random_prompt_artist"
 
+IMAGE_TIMESTAMP = "0000000000"
+
 # API Config
 CLAUDE_MODEL = "claude-3-haiku-20240307"
 OPENAI_MODEL = "gpt-4o-mini"
@@ -87,3 +89,12 @@ def setup_logging():
 
 # Create logger instance
 logger = setup_logging()
+
+# Add update_image_timestamp function
+def update_image_timestamp(new_timestamp: str):
+    global IMAGE_TIMESTAMP
+    IMAGE_TIMESTAMP = new_timestamp
+    logger.info(f"Updated IMAGE_TIMESTAMP to: {IMAGE_TIMESTAMP}")
+
+# Initialize with default
+IMAGE_TIMESTAMP = "0000000000"

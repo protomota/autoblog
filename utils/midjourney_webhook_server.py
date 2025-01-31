@@ -108,10 +108,6 @@ class MidjourneyWebhookHandler:
         """Process and save the image and prompt."""
         try:
 
-            logger.info(f"Using image timestamp: {image_timestamp}")
-
-            breakpoint()
-
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
             if OBSIDIAN_AI_IMAGES:
@@ -153,8 +149,12 @@ def webhook_handler_route():
             if data['status'] == 'done':
                 image_url = data.get('result', {}).get('url')
                 prompt = data.get('prompt') or data.get('result', {}).get('prompt') or "No prompt available"
-                # Get timestamp from the payload or generate a new one
-                image_timestamp = data.get('image_timestamp') or "0000000000"
+                # Get timestamp from URL query parameter instead of payload
+                image_timestamp = request.args.get('image_timestamp') or "0000000000"
+
+                logger.info(f"Using image timestamp: {image_timestamp}")
+
+                breakpoint()
                 
                 if image_url:
                     # Check if we've already processed this URL
