@@ -107,7 +107,7 @@ class MidjourneyWebhookHandler:
     def save_image_and_prompt(self, image_url, prompt, image_timestamp=None):
         """Process and save the image and prompt."""
         try:
-            
+
             logger.info(f"Using image timestamp: {image_timestamp}")
 
             breakpoint()
@@ -154,7 +154,7 @@ def webhook_handler_route():
                 image_url = data.get('result', {}).get('url')
                 prompt = data.get('prompt') or data.get('result', {}).get('prompt') or "No prompt available"
                 # Get timestamp from the payload or generate a new one
-                image_timestamp = data.get('timestamp') or "0000000000"
+                image_timestamp = data.get('image_timestamp') or "0000000000"
                 
                 if image_url:
                     # Check if we've already processed this URL
