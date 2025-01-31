@@ -111,6 +111,7 @@ function updateFieldVisibility() {
     const imageField = document.getElementById('image_field');
     const webhookUrlField = document.getElementById('webhook_url_field');
     const serverSection = document.getElementById('server_section');
+    const chaosSliderField = document.getElementById('chaos_slider_field');
 
     // Clear values when agent name changes
     document.getElementById('image_prompt').value = '';
@@ -125,6 +126,7 @@ function updateFieldVisibility() {
         document.getElementById('topic').required = true;
         document.getElementById('image_prompt').required = false;
         document.getElementById('webhook_url').required = false;
+        chaosSliderField.classList.add('hidden');
     } else if (agentType === 'blog_artist_ai_agent') {
         webhookUrlField.classList.remove('hidden');
         serverSection.classList.remove('hidden');
@@ -135,11 +137,13 @@ function updateFieldVisibility() {
             imageField.classList.add('hidden');
             document.getElementById('topic').required = false;
             document.getElementById('image_prompt').required = false;
+            chaosSliderField.classList.add('hidden');
         } else {
             topicField.classList.add('hidden');
             imageField.classList.remove('hidden');
             document.getElementById('topic').required = false;
             document.getElementById('image_prompt').required = true;
+            chaosSliderField.classList.remove('hidden');
         }
     }
 }
@@ -189,6 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize fields
     updateAgentNames();
     updateFieldVisibility();
+
+    // Add chaos slider listener
+    const chaosSlider = document.getElementById('chaos_percentage');
+    const chaosValue = document.getElementById('chaos_value');
+    
+    chaosSlider.addEventListener('input', function() {
+        chaosValue.textContent = this.value;
+    });
 
     // Form submission handler
     document.getElementById('generateForm').addEventListener('submit', async function(e) {
@@ -259,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (image_prompt.trim()) {
                     requestBody.image_prompt = image_prompt.trim();
                 }
+                requestBody.chaos_percentage = document.getElementById('chaos_percentage').value;
             }
 
             appendToConsole(consoleLog, 'Sending request to server...');

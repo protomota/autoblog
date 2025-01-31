@@ -57,7 +57,7 @@ CLAUDE_MODEL = "claude-3-haiku-20240307"
 OPENAI_MODEL = "gpt-4o-mini"
 
 MIDJOURNEY_ASPECT_RATIO = "7:4"
-MIDJOURNEY_CHAOS_PERCENTAGE = "100"
+MIDJOURNEY_CHAOS_PERCENTAGE = "0"  # Default value, will be overridden by UI
     
 USERAPI_AI_API_BASE_URL = "https://api.userapi.ai/midjourney/v2"   
 
@@ -103,5 +103,18 @@ class TimestampManager:
         self._timestamp = new_timestamp
         logger.info(f"Updated IMAGE_TIMESTAMP to: {self._timestamp}")
 
-# Create a single instance
+class ChaosPercentageManager:
+    def __init__(self):
+        self._chaos_percentage = "0"
+    
+    @property
+    def chaos_percentage(self):
+        return self._chaos_percentage
+    
+    def update(self, new_percentage: str):
+        self._chaos_percentage = new_percentage
+        logger.info(f"Updated MIDJOURNEY_CHAOS_PERCENTAGE to: {self._chaos_percentage}")
+
+# Create instances
 timestamp_manager = TimestampManager()
+chaos_percentage_manager = ChaosPercentageManager()

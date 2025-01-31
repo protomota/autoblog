@@ -24,7 +24,8 @@ from blogi.core.config import (
     BLOG_AGENT_TYPES, 
     BLOG_AGENT_NAMES,
     BLOG_RESEARCHER_AI_AGENT, 
-    BLOG_ARTIST_AI_AGENT
+    BLOG_ARTIST_AI_AGENT,
+    chaos_percentage_manager
 )
 from blogi.core.agent import BlogAgent
 
@@ -38,7 +39,7 @@ logger.info(f"Project root path: {PROJECT_ROOT}")
 logger.info(f"Python path: {os.environ['PYTHONPATH']}")
 logger.info("Loading Flask application and dependencies...")
 
-async def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
+async def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None, chaos_percentage="0"):
     """Execute the command using the BlogAgent directly."""
     logger.info("\n=== New Generation Command Started ===")
     logger.info(f"Parameters received:")
@@ -47,8 +48,12 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
     logger.info(f"  - Topic: {topic}")
     logger.info(f"  - Image Prompt: {image_prompt}")
     logger.info(f"  - Webhook URL: {webhook_url}")
+    logger.info(f"  - Chaos Percentage: {chaos_percentage}")
     
     try:
+        # Update the chaos percentage manager
+        chaos_percentage_manager.update(chaos_percentage)
+        
         # Explicitly catch the return values from BlogAgent.create
         try:
             success, message, filepath, filename = await BlogAgent.create(
@@ -57,6 +62,7 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
                 topic=topic,
                 image_prompt=image_prompt,
                 webhook_url=webhook_url
+                # Remove chaos_percentage from here since we're using the manager
             )
         except Exception as e:
             # If BlogAgent.create fails to return proper tuple
@@ -179,12 +185,18 @@ async def generate():
                 return jsonify({'success': False, 'message': 'Webhook URL is required for artist agent'})
             
             image_prompt = data.get('image_prompt', None)
-            logger.info(f"Executing artist command with prompt: {image_prompt}, webhook: {webhook_url}")
+            chaos_percentage = data.get('chaos_percentage', "0")
+            
+            # Update the global chaos percentage
+            chaos_percentage_manager.update(chaos_percentage)
+            
+            logger.info(f"Executing artist command with prompt: {image_prompt}, webhook: {webhook_url}, chaos: {chaos_percentage}")
             success, output, filepath, filename = await execute_generate_command(
                 agent_type, 
                 agent_name, 
                 image_prompt=image_prompt,
-                webhook_url=webhook_url
+                webhook_url=webhook_url,
+                chaos_percentage=chaos_percentage
             )
 
         logger.info(f"generate Command execution completed - Success: {success}, Output: {output}, Filename: {filename}, Filepath: {filepath}")

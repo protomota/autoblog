@@ -5,7 +5,13 @@ import logging
 from datetime import datetime
 
 # Configure logging
-from blogi.core.config import logger, USERAPI_AI_API_BASE_URL, timestamp_manager, MIDJOURNEY_ASPECT_RATIO, MIDJOURNEY_CHAOS_PERCENTAGE
+from blogi.core.config import (
+    logger, 
+    USERAPI_AI_API_BASE_URL, 
+    timestamp_manager, 
+    MIDJOURNEY_ASPECT_RATIO,
+    chaos_percentage_manager  # Replace MIDJOURNEY_CHAOS_PERCENTAGE with this
+)
 
 class MidjourneyImageService:
     # Add API base URL as a class constant
@@ -14,8 +20,8 @@ class MidjourneyImageService:
         self.api_key = api_key
         self.account_hash = account_hash
         
-        # Add the aspect ratio and chaos to the prompt
-        prompt = f"{prompt} --ar {MIDJOURNEY_ASPECT_RATIO} --chaos {MIDJOURNEY_CHAOS_PERCENTAGE}"
+        # Use the chaos_percentage_manager instead of the constant
+        prompt = f"{prompt} --ar {MIDJOURNEY_ASPECT_RATIO} --chaos {chaos_percentage_manager.chaos_percentage}"
         self.prompt = prompt
 
         # Add timestamp to webhook URL as query parameter

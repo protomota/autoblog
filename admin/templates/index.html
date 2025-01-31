@@ -53,6 +53,20 @@
                 <label for="webhook_url">Webhook URL (Get this from NGROK)</label>
                 <input type="url" id="webhook_url" name="webhook_url" placeholder="Enter webhook URL here...">
             </div>
+            <div id="chaos_slider_field" class="form-group hidden">
+                <label for="chaos_percentage">Chaos Percentage: <span id="chaos_value">0</span>%</label>
+                <input type="range" 
+                       id="chaos_percentage" 
+                       name="chaos_percentage" 
+                       min="0" 
+                       max="100" 
+                       value="0" 
+                       class="slider">
+                <div class="slider-labels">
+                    <span>Stable</span>
+                    <span>Chaotic</span>
+                </div>
+            </div>
             <button type="submit" id="generateButton">
                 <span id="buttonText">Generate Post</span>
                 <span id="buttonSpinner" class="spinner hidden"></span>

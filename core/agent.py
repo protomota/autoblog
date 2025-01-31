@@ -129,12 +129,24 @@ class BlogAgent:
         self.summarize_content_path = self.common_prompts_path / "summarize_content.txt"
 
     @classmethod
-    async def create(cls, agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None):
-        """Create a blog post using the specified agent.
-        Returns:
-            Tuple[bool, str, Optional[str], Optional[str]]: Returns (success, message, filepath, filename)
-        """
+    async def create(cls,
+                    agent_type: str,
+                    agent_name: str,
+                    topic: str = None,
+                    image_prompt: str = None,
+                    webhook_url: str = None,
+                    chaos_percentage: str = "0"):
+        """Create a new blog post using the specified agent type and parameters."""
         try:
+            logger.info(f"\n=== BlogAgent.create Started ===")
+            logger.info(f"Parameters:")
+            logger.info(f"  - Agent Type: {agent_type}")
+            logger.info(f"  - Agent Name: {agent_name}")
+            logger.info(f"  - Topic: {topic}")
+            logger.info(f"  - Image Prompt: {image_prompt}")
+            logger.info(f"  - Webhook URL: {webhook_url}")
+            logger.info(f"  - Chaos Percentage: {chaos_percentage}")
+            
             # If it's a BLOG_ARTIST_RANDOM_PROMPT_ARTIST and no image prompt is provided, generate one
             if agent_name == BLOG_ARTIST_RANDOM_PROMPT_ARTIST and not image_prompt:
                 logger.info("No image prompt provided, generating random prompt...")
