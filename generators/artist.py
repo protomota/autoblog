@@ -36,7 +36,7 @@ class ArtistPostGenerator:
         """
         try:
             templates = await self._load_templates()
-            image_paths = await self._generate_image_file_paths()
+            image_paths = await self._generate_images()
             gallery_code = self._create_gallery_code(image_paths)
             
             blog_content = await self.agent.anthropic.ask(
@@ -59,13 +59,10 @@ class ArtistPostGenerator:
             return "error.md", f"Error generating post: {str(e)}"
 
     async def _generate_image_file_paths(self) -> Dict[str, str]:
-        image_timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        image_timestamp = str(int(datetime.now().timestamp()))
         os.environ['IMAGE_TIMESTAMP'] = image_timestamp
-
-        saved_timestamp = os.getenv('IMAGE_TIMESTAMP')
-
-        logger.info(f"SAVED IMAGE_TIMESTAMP: {saved_timestamp}")
-        breakpoint()
+        
+        logger.info(f"SAVED IMAGE_TIMESTAMP: {image_timestamp}")
 
         return {
             'top_left': f"images/{image_timestamp}_top_left.png",

@@ -104,12 +104,12 @@ class MidjourneyWebhookHandler:
             logger.error(f"Failed to download image: {e}")
             raise
 
-    def save_image_and_prompt(self, image_url, prompt):
+    def save_image_and_prompt(self, image_url, prompt, image_timestamp=None):
         """Process and save the image and prompt."""
         try:
-            # Generate Unix timestamp if not provided in environment
-            image_timestamp = os.getenv('IMAGE_TIMESTAMP') or "0000000000"
-            logger.info(f"GET IMAGE_TIMESTAMP: {image_timestamp}")
+            
+            logger.info(f"Using image timestamp: {image_timestamp}")
+
             breakpoint()
 
             # Create directories if they don't exist
@@ -153,6 +153,8 @@ def webhook_handler_route():
             if data['status'] == 'done':
                 image_url = data.get('result', {}).get('url')
                 prompt = data.get('prompt') or data.get('result', {}).get('prompt') or "No prompt available"
+                # Get timestamp from the payload or generate a new one
+                image_timestamp = data.get('timestamp') or "0000000000"
                 
                 if image_url:
                     # Check if we've already processed this URL
@@ -161,7 +163,7 @@ def webhook_handler_route():
                         return jsonify({'status': 'success', 'message': 'Already processed'}), 200
 
                     logger.info(f"QUAD Image generation completed. URL: {image_url}")
-                    webhook_handler.save_image_and_prompt(image_url, prompt)
+                    webhook_handler.save_image_and_prompt(image_url, prompt, image_timestamp)
                     webhook_handler.mark_as_processed(image_url)
                     return jsonify({'status': 'success', 'image_url': image_url}), 200
                 else:

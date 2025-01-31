@@ -1,6 +1,7 @@
 import requests
 import time
 import logging
+from datetime import datetime
 
 # Configure logging
 from blogi.core.config import logger, USERAPI_AI_API_BASE_URL
@@ -51,12 +52,15 @@ class MidjourneyImageService:
         
         logger.info(f"Make the initial request to generate a QUAD image WITH WEBHOOK URL: {self.webhook_url}")
 
+        image_timestamp = os.getenv('IMAGE_TIMESTAMP')
+        
         payload = {
             "prompt": self.prompt,
             "webhook_url": self.webhook_url,
             "webhook_type": "progress",
             "account_hash": self.account_hash,
-            "is_disable_prefilter": True
+            "is_disable_prefilter": True,
+            "image_timestamp": image_timestamp  # Add timestamp to payload
         }
         logger.info(f"\n\n++++++++++++\n\npayload: {payload}\n\n++++++++++++\n\n")
         
