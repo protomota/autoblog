@@ -64,18 +64,13 @@ class MidjourneyWebhookHandler:
                 quadrant = img.crop(coords)
                 
                 filename = f"{base_name}_{position}.png"
-                ai_output_path = BLOG_SITE_STATIC_IMAGES_PATH / filename
                 obsidian_output_path = OBSIDIAN_AI_IMAGES / filename
                 try:
-                    quadrant.save(ai_output_path)
-                    logger.info(f"Saved: {ai_output_path}")
-                    if obsidian_output_path:
-                        quadrant.save(obsidian_output_path)
-                        logger.info(f"Saved: {obsidian_output_path}")
+                    quadrant.save(obsidian_output_path)
+                    logger.info(f"Saved: {obsidian_output_path}")
+                        
                 except Exception as e:
-                    logger.error(f"Error saving {ai_output_path}: {e}")
-                    if obsidian_output_path:
-                        logger.error(f"Error saving {obsidian_output_path}: {e}")
+                    logger.error(f"Error saving {obsidian_output_path}: {e}")
             
             # Close the image before deleting
             img.close()
