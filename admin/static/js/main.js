@@ -347,6 +347,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const consoleLog = document.getElementById('console-log');
         const deployButton = document.getElementById('deployButton');
         
+        // Disable button and show spinner
+        generateButton.disabled = true;
+        buttonText.textContent = 'Generating...';
+        buttonSpinner.classList.remove('hidden');
+        
         // Hide deploy button when starting generation
         deployButton.classList.add('hidden');
         
