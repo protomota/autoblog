@@ -51,6 +51,7 @@ function runNGROKServer() {
 function updateAgentNames() {
     const agentType = document.getElementById('agent_type').value;
     const agentNameSelect = document.getElementById('agent_name');
+    const currentValue = agentNameSelect.value; // Store current value before clearing
 
     // Clear existing options
     agentNameSelect.innerHTML = '';
@@ -69,8 +70,8 @@ function updateAgentNames() {
             option.value = name;
             option.textContent = displayNames[name] || name;
             
-            // Set default selection for artist agent
-            if (name === 'random_prompt_artist') {
+            // Restore previous selection if it exists, otherwise use default
+            if (name === currentValue || (!currentValue && name === 'random_prompt_artist')) {
                 option.selected = true;
             }
             
@@ -90,8 +91,8 @@ function updateAgentNames() {
             option.value = name;
             option.textContent = displayNames[name] || name;
             
-            // Set default selection for researcher agent
-            if (name === 'topic_researcher') {
+            // Restore previous selection if it exists, otherwise use default
+            if (name === currentValue || (!currentValue && name === 'topic_researcher')) {
                 option.selected = true;
             }
             
@@ -113,23 +114,20 @@ function updateFieldVisibility() {
     const serverSection = document.getElementById('server_section');
     const chaosSliderField = document.getElementById('chaos_slider_field');
 
-    // Clear values when agent name changes
-    document.getElementById('image_prompt').value = '';
-    document.getElementById('webhook_url').value = '';
-    document.getElementById('topic').value = '';
-
+    // Just update visibility and requirements, don't clear any values
     if (agentType === 'blog_researcher_ai_agent') {
         topicField.classList.remove('hidden');
         imageField.classList.add('hidden');
         webhookUrlField.classList.add('hidden');
         serverSection.classList.add('hidden');
+        chaosSliderField.classList.add('hidden');
         document.getElementById('topic').required = true;
         document.getElementById('image_prompt').required = false;
         document.getElementById('webhook_url').required = false;
-        chaosSliderField.classList.add('hidden');
     } else if (agentType === 'blog_artist_ai_agent') {
         webhookUrlField.classList.remove('hidden');
         serverSection.classList.remove('hidden');
+        chaosSliderField.classList.remove('hidden');
         document.getElementById('webhook_url').required = true;
         
         if (agentName === 'random_prompt_artist') {
@@ -137,13 +135,11 @@ function updateFieldVisibility() {
             imageField.classList.add('hidden');
             document.getElementById('topic').required = false;
             document.getElementById('image_prompt').required = false;
-            chaosSliderField.classList.add('hidden');
         } else {
             topicField.classList.add('hidden');
             imageField.classList.remove('hidden');
             document.getElementById('topic').required = false;
             document.getElementById('image_prompt').required = true;
-            chaosSliderField.classList.remove('hidden');
         }
     }
 }
@@ -175,11 +171,96 @@ function appendToConsole(consoleLog, message, className = '') {
     consoleLog.scrollTop = consoleLog.scrollHeight;
 }
 
+// Function to save form values to localStorage
+function saveFormValues() {
+    const formData = {
+        agent_type: document.getElementById('agent_type').value,
+        agent_name: document.getElementById('agent_name').value,
+        topic: document.getElementById('topic').value,
+        image_prompt: document.getElementById('image_prompt').value,
+        webhook_url: document.getElementById('webhook_url').value,
+        chaos_percentage: document.getElementById('chaos_percentage').value
+    };
+    console.log('Saving form data:', formData); // Debug log
+    localStorage.setItem('generateFormData', JSON.stringify(formData));
+}
+
+// Function to load form values from localStorage
+function loadFormValues() {
+    const savedData = localStorage.getItem('generateFormData');
+    console.log('Loading saved data:', savedData); // Debug log
+    
+    if (savedData) {
+        const formData = JSON.parse(savedData);
+        
+        // Set agent type first
+        const agentTypeSelect = document.getElementById('agent_type');
+        if (formData.agent_type) {
+            agentTypeSelect.value = formData.agent_type;
+            // Trigger change event to update agent names dropdown
+            agentTypeSelect.dispatchEvent(new Event('change'));
+        }
+        
+        // Set agent name after small delay to ensure dropdown is populated
+        setTimeout(() => {
+            const agentNameSelect = document.getElementById('agent_name');
+            if (formData.agent_name) {
+                agentNameSelect.value = formData.agent_name;
+                // Trigger change event to update field visibility
+                agentNameSelect.dispatchEvent(new Event('change'));
+            }
+            
+            // Set other form values
+            if (formData.topic) document.getElementById('topic').value = formData.topic;
+            if (formData.image_prompt) document.getElementById('image_prompt').value = formData.image_prompt;
+            if (formData.webhook_url) document.getElementById('webhook_url').value = formData.webhook_url;
+            if (formData.chaos_percentage) {
+                const chaosSlider = document.getElementById('chaos_percentage');
+                chaosSlider.value = formData.chaos_percentage;
+                document.getElementById('chaos_value').textContent = formData.chaos_percentage;
+            }
+        }, 100);
+    }
+}
+
+// Add event listeners to save form values on change
+function setupFormPersistence() {
+    const formElements = [
+        'agent_type',
+        'agent_name',
+        'topic',
+        'image_prompt',
+        'webhook_url',
+        'chaos_percentage'
+    ];
+    
+    formElements.forEach(elementId => {
+        const element = document.getElementById(elementId);
+        if (element) {
+            // Save on any input change
+            element.addEventListener('input', saveFormValues);
+            element.addEventListener('change', saveFormValues);
+            // For text inputs and textareas, also save on keyup and blur
+            if (element.type === 'text' || element.type === 'url' || element.tagName.toLowerCase() === 'textarea') {
+                element.addEventListener('keyup', saveFormValues);
+                element.addEventListener('blur', saveFormValues);
+            }
+        }
+    });
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners
-    document.getElementById('agent_type').addEventListener('change', updateAgentNames);
-    document.getElementById('agent_name').addEventListener('change', updateFieldVisibility);
+    document.getElementById('agent_type').addEventListener('change', () => {
+        updateAgentNames();
+        saveFormValues(); // Save after updating agent names
+    });
+    
+    document.getElementById('agent_name').addEventListener('change', () => {
+        updateFieldVisibility();
+        saveFormValues(); // Save after updating visibility
+    });
 
     // Add server button listeners
     document.getElementById('ngrokButton').addEventListener('click', () => {
@@ -190,21 +271,27 @@ document.addEventListener('DOMContentLoaded', () => {
         startServer('.start_midjourney_webhook');
     });
 
-    // Initialize fields
-    updateAgentNames();
-    updateFieldVisibility();
-
     // Add chaos slider listener
     const chaosSlider = document.getElementById('chaos_percentage');
     const chaosValue = document.getElementById('chaos_value');
     
     chaosSlider.addEventListener('input', function() {
         chaosValue.textContent = this.value;
+        saveFormValues(); // Save when slider changes
     });
+
+    // Initialize fields
+    updateAgentNames();
+    updateFieldVisibility();
+
+    // Add form persistence
+    setupFormPersistence();
+    loadFormValues();
 
     // Form submission handler
     document.getElementById('generateForm').addEventListener('submit', async function(e) {
         e.preventDefault();
+        saveFormValues(); // Save form values before submission
         
         // Get UI elements
         const generateButton = document.getElementById('generateButton');
@@ -233,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const topic = document.getElementById('topic').value;
         const image_prompt = document.getElementById('image_prompt').value;
         const webhook_url = document.getElementById('webhook_url').value;
+        const chaos_percentage = document.getElementById('chaos_percentage').value;
 
         try {
             appendToConsole(consoleLog, `Agent Type: ${agent_type}`);
@@ -265,12 +353,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 requestBody.webhook_url = webhook_url.trim();
                 
-                if (agent_name !== 'random_prompt_artist' && !image_prompt.trim()) {
-                    throw new Error('Image prompt is required for artist agent');
-                }
-                if (image_prompt.trim()) {
+                // Only add image_prompt if not random_prompt_artist
+                if (agent_name === 'random_prompt_artist') {
+                    // Don't include image_prompt for random_prompt_artist
+                    appendToConsole(consoleLog, 'Using random prompt generation...');
+                } else {
+                    // For prompt_artist, require and include the image prompt
+                    if (!image_prompt.trim()) {
+                        throw new Error('Image prompt is required for artist agent');
+                    }
                     requestBody.image_prompt = image_prompt.trim();
                 }
+                
+                // Always include chaos_percentage for artist agents
                 requestBody.chaos_percentage = document.getElementById('chaos_percentage').value;
             }
 
@@ -314,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         urlContainer.classList.remove('hidden');
                         appendToConsole(consoleLog, `Blog Post generated successfully: ${data.filename}`);
                     }
+
                 } else {
                     throw new Error(data.message || 'Unknown server error');
                 }
@@ -337,5 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
             buttonText.textContent = 'Generate Post';
             buttonSpinner.classList.add('hidden');
         }
+    });
+
+    // Add window unload listener to ensure values are saved before page refresh
+    window.addEventListener('beforeunload', () => {
+        saveFormValues();
     });
 });
