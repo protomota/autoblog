@@ -28,6 +28,7 @@ from blogi.core.config import (
     chaos_percentage_manager
 )
 from blogi.core.agent import BlogAgent
+from blogi.core.deployment import DeploymentManager
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -213,6 +214,50 @@ async def generate():
             'message': f'Error: {str(e)}',
             'filepath': None,
             'filename': None
+        })
+
+@app.route('/deploy', methods=['POST'])
+async def deploy():
+    """Handle blog deployment."""
+    logger.info("Deploy endpoint called")
+    try:
+        deploy_manager = DeploymentManager()
+        
+        # Run deployment process
+        if not all([
+            deploy_manager.sync_content(),
+            deploy_manager.sync_images()
+        ]):
+            return jsonify({
+                'success': False,
+                'message': 'Failed to sync content and images'
+            })
+
+        if deploy_manager.changes_made:
+            if all([
+                deploy_manager.build_hugo(deploy_manager.blog_site_path),
+                deploy_manager.git_operations(deploy_manager.blog_site_path)
+            ]):
+                return jsonify({
+                    'success': True,
+                    'message': 'Deployment completed successfully!'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'message': 'Failed to build and deploy'
+                })
+        else:
+            return jsonify({
+                'success': True,
+                'message': 'No changes detected - skipping deployment'
+            })
+            
+    except Exception as e:
+        logger.error(f"Error in deploy endpoint: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'Deployment error: {str(e)}'
         })
 
 if __name__ == '__main__':

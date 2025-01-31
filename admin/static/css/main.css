@@ -73,7 +73,7 @@ button:disabled:hover {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 .server-buttons {
@@ -172,4 +172,9 @@ h2 {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+#deployButton {
+    margin-top: 10px;
+    width: 100%;
 }

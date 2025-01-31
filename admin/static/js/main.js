@@ -249,6 +249,50 @@ function setupFormPersistence() {
     });
 }
 
+// Add deployment function
+async function deployPosts() {
+    const deployButton = document.getElementById('deployButton');
+    const deployButtonText = document.getElementById('deployButtonText');
+    const deployButtonSpinner = document.getElementById('deployButtonSpinner');
+    const consoleLog = document.getElementById('console-log');
+
+    // Disable button and show loading state
+    deployButton.disabled = true;
+    deployButtonText.textContent = 'Deploying...';
+    deployButtonSpinner.classList.remove('hidden');
+
+    try {
+        appendToConsole(consoleLog, 'Starting blog deployment...');
+        
+        const response = await fetch('/deploy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            appendToConsole(consoleLog, data.message, 'success');
+        } else {
+            throw new Error(data.message || 'Deployment failed');
+        }
+    } catch (error) {
+        console.error('Error during deployment:', error);
+        appendToConsole(consoleLog, `Error: ${error.message}`, 'error');
+    } finally {
+        // Reset button state
+        deployButton.disabled = false;
+        deployButtonText.textContent = 'Deploy Posts to Blog';
+        deployButtonSpinner.classList.add('hidden');
+    }
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners
@@ -280,6 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
         saveFormValues(); // Save when slider changes
     });
 
+    // Add deployment button listener
+    document.getElementById('deployButton').addEventListener('click', deployPosts);
+
     // Initialize fields
     updateAgentNames();
     updateFieldVisibility();
@@ -291,18 +338,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form submission handler
     document.getElementById('generateForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        saveFormValues(); // Save form values before submission
+        saveFormValues();
         
         // Get UI elements
         const generateButton = document.getElementById('generateButton');
         const buttonText = document.getElementById('buttonText');
         const buttonSpinner = document.getElementById('buttonSpinner');
         const consoleLog = document.getElementById('console-log');
+        const deployButton = document.getElementById('deployButton');
         
-        // Disable button and show loading state
-        generateButton.disabled = true;
-        buttonText.textContent = 'Generating Post...';
-        buttonSpinner.classList.remove('hidden');
+        // Hide deploy button when starting generation
+        deployButton.classList.add('hidden');
         
         // Clear the blog URL container when starting new generation
         const urlContainer = document.getElementById('filename-container');
@@ -401,14 +447,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     appendToConsole(consoleLog, successMessage, 'success');
                     
-                    // Handle filename display
+                    // Handle filename display and deploy button
                     if (data.filename) {
                         const filenameElement = document.getElementById('filename');
                         filenameElement.textContent = data.filename;
                         document.getElementById('filename-container').classList.remove('hidden');
                         appendToConsole(consoleLog, `Blog Post generated successfully: ${data.filename}`);
+                        // Show deploy button when filename is displayed
+                        deployButton.classList.remove('hidden');
                     }
-
                 } else {
                     throw new Error(data.message || 'Unknown server error');
                 }
