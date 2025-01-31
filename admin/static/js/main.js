@@ -249,6 +249,55 @@ function setupFormPersistence() {
     });
 }
 
+// Add deployment function
+async function deployPosts() {
+    const deployButton = document.getElementById('deployButton');
+    const deployButtonText = document.getElementById('deployButtonText');
+    const deployButtonSpinner = document.getElementById('deployButtonSpinner');
+    const consoleLog = document.getElementById('console-log');
+
+    // Disable button and show loading state
+    deployButton.disabled = true;
+    deployButtonText.textContent = 'Deploying...';
+    deployButtonSpinner.classList.remove('hidden');
+
+    try {
+        appendToConsole(consoleLog, 'Starting deployment process...');
+        
+        const response = await fetch('/deploy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            appendToConsole(consoleLog, 'Deployment completed successfully!', 'success');
+            if (data.details) {
+                appendToConsole(consoleLog, data.details);
+            }
+        } else {
+            throw new Error(data.message || 'Deployment failed');
+        }
+    } catch (error) {
+        console.error('Deployment error:', error);
+        const errorMessage = error.message || 'An unexpected error occurred during deployment';
+        appendToConsole(consoleLog, `Error: ${errorMessage}`, 'error');
+        alert('Deployment failed. Please check the console log for more details.');
+    } finally {
+        // Reset button state
+        deployButton.disabled = false;
+        deployButtonText.textContent = 'Deploy Posts to Blog';
+        deployButtonSpinner.classList.remove('hidden');
+    }
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners
@@ -438,4 +487,37 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('beforeunload', () => {
         saveFormValues();
     });
+
+    // Add deploy button listener
+    const deployButton = document.getElementById('deployButton');
+    if (deployButton) {
+        deployButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            deployPosts();
+        });
+    }
 });
+
+.deploy-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.deploy-button:hover {
+    background-color: #45a049;
+}
+
+.deploy-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}

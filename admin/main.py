@@ -28,6 +28,7 @@ from blogi.core.config import (
     chaos_percentage_manager
 )
 from blogi.core.agent import BlogAgent
+from blogi.core.deployment import DeploymentManager
 
 app = Flask(__name__, static_url_path='/static')
 
@@ -213,6 +214,75 @@ async def generate():
             'message': f'Error: {str(e)}',
             'filepath': None,
             'filename': None
+        })
+
+@app.route('/deploy', methods=['POST'])
+async def deploy():
+    """Handle deployment request."""
+    logger.info("\n=== Starting Deployment Process ===")
+    
+    try:
+        deploy_manager = DeploymentManager()
+        logger.info("Initialized DeploymentManager")
+        
+        # Sync content and images
+        if not deploy_manager.sync_content():
+            logger.error("Content sync failed")
+            return jsonify({
+                'success': False,
+                'message': 'Content synchronization failed',
+                'details': 'Check server logs for more information'
+            })
+            
+        if not deploy_manager.sync_images():
+            logger.error("Image sync failed")
+            return jsonify({
+                'success': False,
+                'message': 'Image synchronization failed',
+                'details': 'Check server logs for more information'
+            })
+            
+        # If changes were made, build and deploy
+        if deploy_manager.changes_made:
+            logger.info("Changes detected, proceeding with build and deployment")
+            
+            if not deploy_manager.build_hugo(deploy_manager.blog_site_path):
+                logger.error("Hugo build failed")
+                return jsonify({
+                    'success': False,
+                    'message': 'Hugo build failed',
+                    'details': 'Failed to build the static site'
+                })
+                
+            if not deploy_manager.git_operations(deploy_manager.blog_site_path):
+                logger.error("Git operations failed")
+                return jsonify({
+                    'success': False,
+                    'message': 'Git operations failed',
+                    'details': 'Failed to commit and push changes'
+                })
+                
+            logger.info("Deployment completed successfully")
+            return jsonify({
+                'success': True,
+                'message': 'Deployment completed successfully',
+                'details': 'All changes have been published to the blog'
+            })
+        else:
+            logger.info("No changes detected")
+            return jsonify({
+                'success': True,
+                'message': 'No changes to deploy',
+                'details': 'All content is already up to date'
+            })
+            
+    except Exception as e:
+        logger.error(f"Deployment failed with error: {str(e)}")
+        logger.exception("Detailed error trace:")
+        return jsonify({
+            'success': False,
+            'message': f'Deployment failed: {str(e)}',
+            'details': 'An unexpected error occurred during deployment'
         })
 
 if __name__ == '__main__':
