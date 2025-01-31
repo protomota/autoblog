@@ -40,6 +40,7 @@ async def generate_blog_image(image_prompt: str, webhook_url: str) -> None:
         return
         
     try:
+
         # Need to get these from environment or config
         api_key = os.getenv('USERAPI_AI_API_KEY')
         account_hash = os.getenv('USERAPI_AI_ACCOUNT_HASH')

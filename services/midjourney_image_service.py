@@ -12,38 +12,13 @@ class MidjourneyImageService:
         self.api_key = api_key
         self.account_hash = account_hash
         self.prompt = prompt
-        self.webhook_url = webhook_url
-
-        logger.info(f"INIT MidjourneyImageService WITH WEBHOOK URL: {webhook_url}")
+        # Ensure webhook URL ends with /imagine/webhook
+        self.webhook_url = webhook_url.rstrip('/') + '/imagine/webhook'
+        logger.info(f"INIT MidjourneyImageService WITH WEBHOOK URL: {self.webhook_url}")
         self.headers = {
             "api-key": self.api_key,
             "Content-Type": "application/json"
         }
-
-    def _generate_quad_image(self):
-        """Make the initial request to generate a QUAD image"""
-        
-        logger.info(f"Make the initial request to generate a QUAD image WITH WEBHOOK URL: {self.webhook_url}")
-
-        payload = {
-            "prompt": self.prompt,
-            "webhook_url": self.webhook_url,
-            "webhook_type": "progress",
-            "account_hash": self.account_hash,
-            "is_disable_prefilter": True
-        }
-
-        logger.info(f"\n\n++++++++++++\n\npayload: {payload}\n\n++++++++++++\n\n")
-        
-        response = requests.post(
-            f"{USERAPI_AI_API_BASE_URL}/imagine",
-            headers=self.headers,
-            json=payload,
-            timeout=30
-        )
-        
-        response.raise_for_status()
-        return response.json()
 
     async def run_async(self):
         """
@@ -83,15 +58,16 @@ class MidjourneyImageService:
             "account_hash": self.account_hash,
             "is_disable_prefilter": True
         }
-
         logger.info(f"\n\n++++++++++++\n\npayload: {payload}\n\n++++++++++++\n\n")
         
         response = requests.post(
-            f"{self.API_BASE_URL}/imagine",
+            f"{USERAPI_AI_API_BASE_URL}/imagine",
             headers=self.headers,
             json=payload,
             timeout=30
         )
+        logger.info(f"\n\n++++++++++++\n\nresponse: {response}\n\n++++++++++++\n\n")
+        
         
         response.raise_for_status()
         return response.json()

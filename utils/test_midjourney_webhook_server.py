@@ -26,7 +26,7 @@ def test_webhook(webhook_url, image_url):
         print(f"Error: {e}")
 
 if __name__ == "__main__":
-    DEFAULT_WEBHOOK_URL = 'http://localhost:9119/imagine/webhook'
+    DEFAULT_WEBHOOK_URL = 'https://fc84-47-204-135-48.ngrok-free.app/imagine/webhook'
     DEFAULT_IMAGE_URL = 'https://placehold.co/2048x2048/png'
 
     parser = argparse.ArgumentParser(description='Test webhook with custom URL')

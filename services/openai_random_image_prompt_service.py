@@ -6,7 +6,7 @@ from openai import AsyncOpenAI
 from typing import Optional
 
 # Configure logging
-from blogi.core.config import logger
+from blogi.core.config import logger, OPENAI_MODEL
 
 class OpenAIRandomImagePromptService:
 
@@ -20,8 +20,8 @@ class OpenAIRandomImagePromptService:
             Optional[str]: The generated prompt or None if generation fails
         """
         try:
-            response = await self.client.chat.completions.create(
-                model="gpt-4",
+            key_words_response = await self.client.chat.completions.create(
+                model=OPENAI_MODEL,
                 messages=[{
                     "role": "system",
                     "content": "You are a creative image prompt generator."
@@ -30,6 +30,19 @@ class OpenAIRandomImagePromptService:
                     "content": "Generate a creative and detailed image prompt for Midjourney."
                 }]
             )
+
+            key_words = key_words_response.choices[0].message.content
+
+            payload = [
+                {"role": "system", "content": "You are a helpful assistant. Help me generate an AI image prompt!"},
+                {"role": "user", "content": f"create a detailed prompt of less than 30 words for these key words {key_words} returning only the prompt and no other text or quotation marks"}
+            ]
+
+            response = await self.client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=payload
+            )
+            
             if response and response.choices:
                 return response.choices[0].message.content
             return None
