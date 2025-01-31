@@ -176,7 +176,7 @@ class BlogAgent:
 
                     
                 if filepath:
-                    return True, "Blog post generated successfully", str(filepath), filename
+                    return True, "Blog post generation completed successfully", str(filepath), filename
                 else:
                     return False, "Failed to save blog post", None, None
                 

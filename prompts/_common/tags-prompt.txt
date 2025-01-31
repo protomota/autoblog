@@ -1,1 +1,0 @@
-Generate an array of exactly five tags for markdown frontmatter that uses this exact format '["one","two","three",four","five"]'. Wrap each tag in quotes. Do not return any extra text. Only return this array. generated tags based on this content, and return the result. Content: {content}

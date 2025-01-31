@@ -1,4 +1,0 @@
-You're a Technical Researcher that has a casual style of writing in your blog. 
-Write a blog post about {topic} in markup syntax.
-Return only the markdown contents of blog post, to not add a comment or return any extra text.
-Return the result.

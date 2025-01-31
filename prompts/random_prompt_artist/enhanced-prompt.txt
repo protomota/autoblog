@@ -1,5 +1,0 @@
-Instructions:
-1. Based on the provided prompt, write a comprehensive blog post.
-2. Blog Post Structure:
-   - Start with a brief introduction to the Image Prompt
-   - Briefly go indepth with thoughts and opinions on the Image Prompt.

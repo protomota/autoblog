@@ -1,4 +1,0 @@
-{frontmatter}
->Disclaimer: {disclaimer}
-
-{content}

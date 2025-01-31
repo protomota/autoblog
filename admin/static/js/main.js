@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const urlLink = document.getElementById('filename');
                         urlLink.textContent = data.filename;
                         urlContainer.classList.remove('hidden');
-                        appendToConsole(consoleLog, `Blog Post generated: ${data.filename}`);
+                        appendToConsole(consoleLog, `Blog Post generated successfully: ${data.filename}`);
                     }
                 } else {
                     throw new Error(data.message || 'Unknown server error');
