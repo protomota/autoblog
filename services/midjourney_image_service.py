@@ -23,7 +23,6 @@ class MidjourneyImageService:
         current_timestamp = timestamp_manager.timestamp
         self.webhook_url = f"{webhook_base}?image_timestamp={current_timestamp}"
         logger.info(f"INIT MidjourneyImageService WITH WEBHOOK URL: {self.webhook_url}")
-        breakpoint()
         self.headers = {
             "api-key": self.api_key,
             "Content-Type": "application/json"

@@ -40,20 +40,20 @@ class MidjourneyWebhookHandler:
     def slice_and_save_images(self,
                               dated_ai_image_path,
                               image_timestamp):
-        
-        """Slices a 2048x2048 image into four 1024x1024 images and saves them."""
+        """Slices an image into four equal-sized quadrants while maintaining aspect ratio."""
         try:
             img = Image.open(dated_ai_image_path)
+            width, height = img.size
             
-            if img.size != (2048, 2048):
-                logger.error(f"Image must be 2048x2048 pixels. Current size: {img.size}")
-                return
+            # Calculate dimensions for each quadrant
+            quad_width = width // 2
+            quad_height = height // 2
             
             coordinates = [
-                (0, 0, 1024, 1024),       # Top-left
-                (1024, 0, 2048, 1024),    # Top-right
-                (0, 1024, 1024, 2048),    # Bottom-left
-                (1024, 1024, 2048, 2048)  # Bottom-right
+                (0, 0, quad_width, quad_height),                    # Top-left
+                (quad_width, 0, width, quad_height),                # Top-right
+                (0, quad_height, quad_width, height),               # Bottom-left
+                (quad_width, quad_height, width, height)            # Bottom-right
             ]
             
             base_name = Path(dated_ai_image_path).stem
@@ -153,8 +153,6 @@ def webhook_handler_route():
                 image_timestamp = request.args.get('image_timestamp') or "0000000000"
 
                 logger.info(f"Using image timestamp: {image_timestamp}")
-
-                breakpoint()
                 
                 if image_url:
                     # Check if we've already processed this URL
