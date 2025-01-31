@@ -38,11 +38,10 @@ class MidjourneyWebhookHandler:
         return hmac.compare_digest(expected_signature, signature)
 
     def slice_and_save_images(self,
-                              dated_ai_image_path,
-                              image_timestamp):
+                              dated_ai_image_path):
         """Slices an image into four equal-sized quadrants while maintaining aspect ratio."""
         try:
-            logger.info(f"Slicing and saving images for timestamp: {image_timestamp}")
+            logger.info(f"Slicing and saving images for dated_ai_image_path: {dated_ai_image_path}")
 
             img = Image.open(dated_ai_image_path)
             width, height = img.size
@@ -64,7 +63,7 @@ class MidjourneyWebhookHandler:
             for coords, position in zip(coordinates, positions):
                 quadrant = img.crop(coords)
                 
-                filename = f"{base_name}_{image_timestamp}_{position}.png"
+                filename = f"{base_name}_{position}.png"
                 ai_output_path = BLOG_SITE_STATIC_IMAGES_PATH / filename
                 obsidian_output_path = OBSIDIAN_AI_IMAGES / filename
                 try:
@@ -121,7 +120,7 @@ class MidjourneyWebhookHandler:
             self.download_image(image_url, dated_obsidian_paths['image'])
             
             # Slice the image into quadrants
-            self.slice_and_save_images(dated_obsidian_paths['image'], image_timestamp)
+            self.slice_and_save_images(dated_obsidian_paths['image'])
             
         except Exception as e:
             logger.error(f"Error in save_image_and_prompt: {e}")
