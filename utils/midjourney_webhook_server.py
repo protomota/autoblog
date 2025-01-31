@@ -109,8 +109,9 @@ class MidjourneyWebhookHandler:
         try:
             # Generate Unix timestamp if not provided in environment
             image_timestamp = os.getenv('IMAGE_TIMESTAMP') or "0000000000"
-            logger.info(f"Image timestamp: {image_timestamp}")
-            
+            logger.info(f"GET IMAGE_TIMESTAMP: {image_timestamp}")
+            breakpoint()
+
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
             if OBSIDIAN_AI_IMAGES:

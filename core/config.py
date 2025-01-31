@@ -53,6 +53,8 @@ BLOG_ARTIST_RANDOM_PROMPT_ARTIST = "random_prompt_artist"
 # API Config
 CLAUDE_MODEL = "claude-3-haiku-20240307"
 OPENAI_MODEL = "gpt-4o-mini"
+
+MIDJOURNEY_ASPECT_RATIO = "7:4"
     
 USERAPI_AI_API_BASE_URL = "https://api.userapi.ai/midjourney/v2"   
 

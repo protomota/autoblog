@@ -6,7 +6,7 @@ from openai import AsyncOpenAI
 from typing import Optional
 
 # Configure logging
-from blogi.core.config import logger, OPENAI_MODEL
+from blogi.core.config import logger, OPENAI_MODEL, MIDJOURNEY_ASPECT_RATIO
 
 class OpenAIRandomImagePromptService:
 
@@ -42,9 +42,14 @@ class OpenAIRandomImagePromptService:
                 model=OPENAI_MODEL,
                 messages=payload
             )
-            
-            if response and response.choices:
-                return response.choices[0].message.content
+
+            random_prompt = response.choices[0].message.content
+
+            # Add the aspect ratio to the random prompt
+            random_prompt = f"{random_prompt} --ar {MIDJOURNEY_ASPECT_RATIO}"
+
+            if random_prompt:
+                return random_prompt
             return None
         except Exception as e:
             logger.error(f"Error generating random prompt: {str(e)}")

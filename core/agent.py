@@ -148,9 +148,6 @@ class BlogAgent:
                     logger.error(f"Error generating random prompt: {str(e)}")
                     return False, "Failed to generate random prompt", None, None
             
-            # Generate the image
-            await generate_blog_image(image_prompt, webhook_url)
-
             # Create an instance of BlogAgent
             agent = cls(
                 agent_type=agent_type,
@@ -173,6 +170,10 @@ class BlogAgent:
                 
                 # Save the blog post
                 filepath = await agent.save_to_obsidian_notes(filename, blog_page)
+
+                # Generate the images AFTER the blog post is saved
+                await generate_blog_image(image_prompt, webhook_url)
+
                     
                 if filepath:
                     return True, "Blog post generated successfully", str(filepath), filename
