@@ -18,7 +18,7 @@ from blogi.core.config import (
     setup_logging, 
     logger, 
     BLOG_SITE_STATIC_IMAGES_PATH, 
-    OBSIDIAN_IMAGES_PATH
+    OBSIDIAN_AI_IMAGES
 )
 
 app = Flask(__name__)
@@ -68,7 +68,7 @@ class MidjourneyWebhookHandler:
                     f"{base_name}_{position}.png"
                 ]:
                     ai_output_path = BLOG_SITE_STATIC_IMAGES_PATH / filename
-                    obsidian_output_path = OBSIDIAN_IMAGES_PATH / filename if OBSIDIAN_IMAGES_PATH else None
+                    obsidian_output_path = OBSIDIAN_AI_IMAGES / filename
                     try:
                         quadrant.save(ai_output_path)
                         logger.info(f"Saved: {ai_output_path}")
@@ -113,13 +113,13 @@ class MidjourneyWebhookHandler:
             
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
-            if OBSIDIAN_IMAGES_PATH:
-                OBSIDIAN_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
+            if OBSIDIAN_AI_IMAGES:
+                OBSIDIAN_AI_IMAGES.mkdir(parents=True, exist_ok=True)
             
             # Setup paths and save files
             dated_obsidian_paths = {
-                'image': OBSIDIAN_IMAGES_PATH / f"midjourney_{image_timestamp}.png",
-                'prompt': OBSIDIAN_IMAGES_PATH / f"midjourney_{image_timestamp}.md"
+                'image': OBSIDIAN_AI_IMAGES / f"midjourney_{image_timestamp}.png",
+                'prompt': OBSIDIAN_AI_IMAGES / f"midjourney_{image_timestamp}.md"
             }
 
             self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
