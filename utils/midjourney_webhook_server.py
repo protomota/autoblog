@@ -76,7 +76,12 @@ class MidjourneyWebhookHandler:
                     logger.error(f"Error saving {ai_output_path}: {e}")
                     if obsidian_output_path:
                         logger.error(f"Error saving {obsidian_output_path}: {e}")
-                        
+            
+            # Close the image before deleting
+            img.close()
+            # Delete the original image
+            Path(dated_ai_image_path).unlink()
+            logger.info(f"Deleted original image: {dated_ai_image_path}")
         except Exception as e:
             logger.error(f"Error processing image: {e}")
 
