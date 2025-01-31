@@ -70,7 +70,7 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
         # Extract filename from filepath if it exists
         filename = Path(filepath).name if filepath else None
             
-        logger.info(f"Command execution completed - Success: {success}, Output: {message}, Filename: {filename}, Filepath: {filepath}")
+        logger.info(f"execute_generate_command Command execution completed - Success: {success}, Output: {message}, Filename: {filename}, Filepath: {filepath}")
         return success, message, filepath, filename
             
     except Exception as e:
@@ -187,7 +187,7 @@ async def generate():
                 webhook_url=webhook_url
             )
 
-        logger.info(f"Command execution completed - Success: {success}, Output: {output}, Filename: {filename}, Filepath: {filepath}")
+        logger.info(f"generate Command execution completed - Success: {success}, Output: {output}, Filename: {filename}, Filepath: {filepath}")
         return jsonify({
             'success': success,
             'message': output,

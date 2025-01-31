@@ -42,6 +42,8 @@ class MidjourneyWebhookHandler:
                               image_timestamp):
         """Slices an image into four equal-sized quadrants while maintaining aspect ratio."""
         try:
+            logger.info(f"Slicing and saving images for timestamp: {image_timestamp}")
+
             img = Image.open(dated_ai_image_path)
             width, height = img.size
             
@@ -62,23 +64,19 @@ class MidjourneyWebhookHandler:
             for coords, position in zip(coordinates, positions):
                 quadrant = img.crop(coords)
                 
-                # Save both dated and normal versions
-                for filename in [
-                    f"{base_name}_{image_timestamp}_{position}.png",
-                    f"{base_name}_{position}.png"
-                ]:
-                    ai_output_path = BLOG_SITE_STATIC_IMAGES_PATH / filename
-                    obsidian_output_path = OBSIDIAN_AI_IMAGES / filename
-                    try:
-                        quadrant.save(ai_output_path)
-                        logger.info(f"Saved: {ai_output_path}")
-                        if obsidian_output_path:
-                            quadrant.save(obsidian_output_path)
-                            logger.info(f"Saved: {obsidian_output_path}")
-                    except Exception as e:
-                        logger.error(f"Error saving {ai_output_path}: {e}")
-                        if obsidian_output_path:
-                            logger.error(f"Error saving {obsidian_output_path}: {e}")
+                filename = f"{base_name}_{image_timestamp}_{position}.png"
+                ai_output_path = BLOG_SITE_STATIC_IMAGES_PATH / filename
+                obsidian_output_path = OBSIDIAN_AI_IMAGES / filename
+                try:
+                    quadrant.save(ai_output_path)
+                    logger.info(f"Saved: {ai_output_path}")
+                    if obsidian_output_path:
+                        quadrant.save(obsidian_output_path)
+                        logger.info(f"Saved: {obsidian_output_path}")
+                except Exception as e:
+                    logger.error(f"Error saving {ai_output_path}: {e}")
+                    if obsidian_output_path:
+                        logger.error(f"Error saving {obsidian_output_path}: {e}")
                         
         except Exception as e:
             logger.error(f"Error processing image: {e}")
@@ -104,10 +102,10 @@ class MidjourneyWebhookHandler:
             logger.error(f"Failed to download image: {e}")
             raise
 
-    def save_image_and_prompt(self, image_url, prompt, image_timestamp=None):
+    def save_image_and_prompt(self, image_url, prompt, image_timestamp):
         """Process and save the image and prompt."""
         try:
-
+            logger.info(f"Saving image and prompt for timestamp: {image_timestamp}")
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
             if OBSIDIAN_AI_IMAGES:
@@ -152,15 +150,14 @@ def webhook_handler_route():
                 # Get timestamp from URL query parameter instead of payload
                 image_timestamp = request.args.get('image_timestamp') or "0000000000"
 
-                logger.info(f"Using image timestamp: {image_timestamp}")
-                
                 if image_url:
                     # Check if we've already processed this URL
                     if webhook_handler.has_been_processed(image_url):
                         logger.info(f"Skipping already processed image: {image_url}")
                         return jsonify({'status': 'success', 'message': 'Already processed'}), 200
-
+                    
                     logger.info(f"QUAD Image generation completed. URL: {image_url}")
+                    logger.info(f"Using image timestamp: {image_timestamp}")
                     webhook_handler.save_image_and_prompt(image_url, prompt, image_timestamp)
                     webhook_handler.mark_as_processed(image_url)
                     return jsonify({'status': 'success', 'image_url': image_url}), 200
