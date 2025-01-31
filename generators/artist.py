@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 # Configure logging
-from blogi.core.config import logger, PROJECT_ROOT, IMAGE_TIMESTAMP, update_image_timestamp
+from blogi.core.config import logger, PROJECT_ROOT, timestamp_manager
 
 class ArtistPostGenerator:
     def __init__(self, agent):
@@ -60,15 +60,16 @@ class ArtistPostGenerator:
 
     async def _generate_image_file_paths(self) -> Dict[str, str]:
         new_timestamp = str(int(datetime.now().timestamp()))
-        update_image_timestamp(new_timestamp)
+        timestamp_manager.update(new_timestamp)
         
-        logger.info(f"SAVED IMAGE_TIMESTAMP: {IMAGE_TIMESTAMP}")
+        current_timestamp = timestamp_manager.timestamp
+        logger.info(f"SAVED IMAGE_TIMESTAMP: {current_timestamp}")
         
         return {
-            'top_left': f"images/midjourney_{IMAGE_TIMESTAMP}_top_left.png",
-            'top_right': f"images/midjourney_{IMAGE_TIMESTAMP}_top_right.png",
-            'bottom_left': f"images/midjourney_{IMAGE_TIMESTAMP}_bottom_left.png",
-            'bottom_right': f"images/midjourney_{IMAGE_TIMESTAMP}_bottom_right.png"
+            'top_left': f"images/midjourney_{current_timestamp}_top_left.png",
+            'top_right': f"images/midjourney_{current_timestamp}_top_right.png",
+            'bottom_left': f"images/midjourney_{current_timestamp}_bottom_left.png",
+            'bottom_right': f"images/midjourney_{current_timestamp}_bottom_right.png"
         }
     
     def _create_gallery_code(self, image_paths: Dict[str, str]) -> str:

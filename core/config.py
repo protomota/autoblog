@@ -50,7 +50,7 @@ BLOG_RESEARCHER_TOPIC_RESEARCHER = "topic_researcher"
 BLOG_ARTIST_PROMPT_ARTIST = "prompt_artist"
 BLOG_ARTIST_RANDOM_PROMPT_ARTIST = "random_prompt_artist"
 
-IMAGE_TIMESTAMP = "0000000000"
+
 
 # API Config
 CLAUDE_MODEL = "claude-3-haiku-20240307"
@@ -90,11 +90,17 @@ def setup_logging():
 # Create logger instance
 logger = setup_logging()
 
-# Add update_image_timestamp function
-def update_image_timestamp(new_timestamp: str):
-    global IMAGE_TIMESTAMP
-    IMAGE_TIMESTAMP = new_timestamp
-    logger.info(f"Updated IMAGE_TIMESTAMP to: {IMAGE_TIMESTAMP}")
+class TimestampManager:
+    def __init__(self):
+        self._timestamp = "0000000000"
+    
+    @property
+    def timestamp(self):
+        return self._timestamp
+    
+    def update(self, new_timestamp: str):
+        self._timestamp = new_timestamp
+        logger.info(f"Updated IMAGE_TIMESTAMP to: {self._timestamp}")
 
-# Initialize with default
-IMAGE_TIMESTAMP = "0000000000"
+# Create a single instance
+timestamp_manager = TimestampManager()

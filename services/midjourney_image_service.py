@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 
 # Configure logging
-from blogi.core.config import logger, USERAPI_AI_API_BASE_URL, IMAGE_TIMESTAMP
+from blogi.core.config import logger, USERAPI_AI_API_BASE_URL, timestamp_manager
 
 class MidjourneyImageService:
     # Add API base URL as a class constant
@@ -16,7 +16,8 @@ class MidjourneyImageService:
         self.prompt = prompt
         # Add timestamp to webhook URL as query parameter
         webhook_base = webhook_url.rstrip('/') + '/imagine/webhook'
-        self.webhook_url = f"{webhook_base}?image_timestamp={IMAGE_TIMESTAMP}"
+        current_timestamp = timestamp_manager.timestamp
+        self.webhook_url = f"{webhook_base}?image_timestamp={current_timestamp}"
         logger.info(f"INIT MidjourneyImageService WITH WEBHOOK URL: {self.webhook_url}")
         breakpoint()
         self.headers = {
