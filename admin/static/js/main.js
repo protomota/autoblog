@@ -307,7 +307,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Clear the blog URL container when starting new generation
         const urlContainer = document.getElementById('filename-container');
         urlContainer.classList.add('hidden');
-        document.getElementById('filename').href = '';
         document.getElementById('filename').textContent = '';
         
         // Initialize console
@@ -402,11 +401,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     appendToConsole(consoleLog, successMessage, 'success');
                     
-                    // Handle blog URL
+                    // Handle filename display
                     if (data.filename) {
-                        const urlLink = document.getElementById('filename');
-                        urlLink.textContent = data.filename;
-                        urlContainer.classList.remove('hidden');
+                        const filenameElement = document.getElementById('filename');
+                        filenameElement.textContent = data.filename;
+                        document.getElementById('filename-container').classList.remove('hidden');
                         appendToConsole(consoleLog, `Blog Post generated successfully: ${data.filename}`);
                     }
 
