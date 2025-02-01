@@ -20,7 +20,9 @@ from blogi.core.config import (
     BLOG_URL,
     BLOG_SITE_PATH,
     BLOG_SITE_POSTS_PATH,
-    OBSIDIAN_POSTS_PATH
+    OBSIDIAN_POSTS_PATH,
+    BLOG_SITE_STATIC_AI_IMAGES_PATH,
+    OBSIDIAN_AI_IMAGES
 )
 
 # Debug mode flag - set to True to enable DEBUG logging
@@ -49,6 +51,8 @@ class DeploymentManager:
         self.blog_site_path = BLOG_SITE_PATH
         self.images_source = OBSIDIAN_IMAGES_PATH
         self.images_dest = BLOG_SITE_STATIC_IMAGES_PATH
+        self.ai_images_source = OBSIDIAN_AI_IMAGES
+        self.ai_images_dest = BLOG_SITE_STATIC_AI_IMAGES_PATH
 
     def run_command(self, command: list[str], cwd: str = None) -> Tuple[bool, str]:
         """Run a shell command and return success status and output."""
@@ -65,7 +69,7 @@ class DeploymentManager:
             return False, e.stderr
 
     def sync_images(self) -> bool:
-        """Verify and sync all images from Obsidian to website folder."""
+        """Verify and sync all images from Obsidian to website folder, including AI images."""
         try:
             self.logger.info("Verifying and syncing images:")
             self.logger.info(f"  Source: {self.images_source}")
@@ -81,7 +85,7 @@ class DeploymentManager:
             # Create destination directory if it doesn't exist
             self.images_dest.mkdir(parents=True, exist_ok=True)
 
-            # Verify markdown files
+            # Verify markdown files for standard images
             md_files = list(self.dest_path.glob('*.md'))
             self.logger.info(f"Verifying {len(md_files)} markdown files:")
 
@@ -115,6 +119,38 @@ class DeploymentManager:
                             self.logger.warning(f"      ✗ Source image missing: {source_path}")
                 else:
                     self.logger.info("    No images found")
+
+            # --- New Section: Sync AI Images ---
+            self.logger.info("Verifying and syncing AI images:")
+            self.logger.info(f"  AI Source: {self.ai_images_source}")
+            self.logger.info(f"  AI Destination: {self.ai_images_dest}")
+
+            # Validate AI image directories
+            for directory in [self.ai_images_source, self.ai_images_dest]:
+                if not directory.exists():
+                    self.logger.error(f"  Directory not found: {directory}")
+                    raise FileNotFoundError(f"Directory not found: {directory}")
+                self.logger.debug(f"  ✓ Validated: {directory}")
+
+            # Create AI destination directory if it doesn't exist
+            self.ai_images_dest.mkdir(parents=True, exist_ok=True)
+
+            # Copy new or updated AI images
+            for source_file in self.ai_images_source.glob('*'):
+                dest_file = self.ai_images_dest / source_file.name
+                if not dest_file.exists() or (source_file.stat().st_mtime > dest_file.stat().st_mtime):
+                    self.logger.info(f"      Copying AI image: {source_file.name}")
+                    shutil.copy2(source_file, dest_file)
+                    self.changes_made = True
+                self.logger.info(f"      ✓ {dest_file}")
+
+            # Delete AI images in destination that no longer exist in source
+            for dest_file in self.ai_images_dest.glob('*'):
+                source_file = self.ai_images_source / dest_file.name
+                if not source_file.exists():
+                    self.logger.info(f"      Deleting AI image: {dest_file.name}")
+                    dest_file.unlink()
+                    self.changes_made = True
 
             return True
             

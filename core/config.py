@@ -32,6 +32,7 @@ BLOG_SITE_REPO = os.getenv("BLOG_SITE_REPO", "my_blog")
 
 BLOG_SITE_PATH = PROJECT_ROOT / BLOG_SITE_REPO
 BLOG_SITE_STATIC_IMAGES_PATH = BLOG_SITE_PATH / "static" / "images"
+BLOG_SITE_STATIC_AI_IMAGES_PATH = BLOG_SITE_PATH / "static" / "images" / "ai_images"
 BLOG_SITE_POSTS_PATH = BLOG_SITE_PATH / "content" / "posts"
 PROMPTS_DIR = PROJECT_ROOT / "blogi" / "prompts"
 
