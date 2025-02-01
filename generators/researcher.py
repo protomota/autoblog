@@ -36,45 +36,52 @@ class ResearcherPostGenerator:
         try:
             # Load templates and store them as instance variable
             self.templates = await self._load_templates()
-            research_data = await self._gather_research()
             
-            blog_content = await self.agent.anthropic.ask(
-                self._format_prompt(self.templates['agent_prompt'], research_data)
-            )
-            
-            if not blog_content:
-                return "default.md", "Failed to generate content"
+            async with self.agent.web_service.get_session() as session:
+                research_data = await self._gather_research()
                 
-            metadata = await self._generate_metadata(blog_content)
-            pages = self._format_pages(self.templates, metadata, blog_content)
-            
-            filename = self._generate_filename(metadata['filename'])
-            blog_page = pages['blog_page']
-            
-            return filename, blog_page
-            
+                blog_content = await self.agent.anthropic.ask(
+                    self._format_prompt(self.templates['agent_prompt'], research_data)
+                )
+                
+                if not blog_content:
+                    return "default.md", "Failed to generate content"
+                    
+                metadata = await self._generate_metadata(blog_content)
+                pages = self._format_pages(self.templates, metadata, blog_content)
+                
+                filename = self._generate_filename(metadata['filename'])
+                blog_page = pages['blog_page']
+                
+                return filename, blog_page
+                
         except Exception as e:
             logger.error(f"Error generating researcher post: {str(e)}")
             return "error.md", f"Error generating post: {str(e)}"
 
     async def _gather_research(self) -> List[Dict]:
-        search_results = await self.agent.brave_client.search(self.agent.topic)
-        research_data = []
-        
-        for result in search_results[:3]:
-            content = await self.agent.web_service.fetch_webpage_content(result['url'])
-            if content:
-                summary = await self.agent.anthropic.ask(
-                    self.templates['summarize_content'] + f"\n\n{content}"
-                )
-                research_data.append({
-                    'title': result.get('title', ''),
-                    'url': result.get('url', ''),
-                    'description': result.get('description', ''),
-                    'content_summary': summary
-                })
-                
-        return research_data
+        try:
+            search_results = await self.agent.brave_client.search(self.agent.topic)
+            research_data = []
+            
+            for result in search_results[:3]:
+                async with self.agent.web_service.get_session() as session:
+                    content = await self.agent.web_service.fetch_webpage_content(result['url'])
+                    if content:
+                        summary = await self.agent.anthropic.ask(
+                            self.templates['summarize_content'] + f"\n\n{content}"
+                        )
+                        research_data.append({
+                            'title': result.get('title', ''),
+                            'url': result.get('url', ''),
+                            'description': result.get('description', ''),
+                            'content_summary': summary
+                        })
+            
+            return research_data
+        except Exception as e:
+            logger.error(f"Error in _gather_research: {str(e)}")
+            raise
 
     def _format_research_summary(self, research_data: List[Dict]) -> str:
         return "\n\n".join([
