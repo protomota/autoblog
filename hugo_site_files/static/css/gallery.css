@@ -1,0 +1,69 @@
+.gallery-container {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    min-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.gallery-image {
+    position: absolute;
+    width: 100%;
+    height: auto;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.gallery-image.active {
+    opacity: 1;
+}
+
+.gallery-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 1rem;
+    cursor: pointer;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.gallery-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.prev-button {
+    left: 1rem;
+}
+
+.next-button {
+    right: 1rem;
+}
+
+.gallery-dots {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 2;
+}
+
+.dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    border: none;
+}
+
+.dot.active {
+    background: white;
+}

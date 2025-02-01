@@ -1,0 +1,5 @@
+{{ $file := .Get 0 }}
+{{ if $file }}
+    {{ $content := readFile $file }}
+    {{ $content | safeHTML }}
+{{ end }}

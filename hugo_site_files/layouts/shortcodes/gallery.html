@@ -1,0 +1,19 @@
+{{ $imageList := .Get "images" }}
+{{ $images := split $imageList "," }}
+{{ $timestamp := now.Unix }}
+<div class="gallery-container">
+    {{ range $index, $image := $images }}
+    <img src="{{ $image }}?v={{ $timestamp }}" 
+         alt="Gallery image {{ add $index 1 }}" 
+         class="gallery-image{{ if eq $index 0 }} active{{ end }}">
+    {{ end }}
+    
+    <button class="gallery-button prev-button">←</button>
+    <button class="gallery-button next-button">→</button>
+    
+    <div class="gallery-dots">
+        {{ range $index, $_ := $images }}
+        <button class="dot{{ if eq $index 0 }} active{{ end }}"></button>
+        {{ end }}
+    </div>
+</div>

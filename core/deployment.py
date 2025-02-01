@@ -128,8 +128,8 @@ class DeploymentManager:
             # Validate AI image directories
             for directory in [self.ai_images_source, self.ai_images_dest]:
                 if not directory.exists():
-                    self.logger.error(f"  Directory not found: {directory}")
-                    raise FileNotFoundError(f"Directory not found: {directory}")
+                    self.logger.info(f"  Creating directory: {directory}")
+                    directory.mkdir(parents=True, exist_ok=True)
                 self.logger.debug(f"  ✓ Validated: {directory}")
 
             # Create AI destination directory if it doesn't exist
