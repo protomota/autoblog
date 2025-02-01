@@ -30,41 +30,53 @@ Blogi is an advanced blog post generation system that uses AI agents to create a
 
 ## Installation & Setup
 
-1. **Clone the Repository**
-
+1. **Create Your Project Directory**  
+   Create a new directory for your project and navigate into it:
    ```bash
-   git clone <repository-url>
-   cd blogi
+   mkdir my_project
+   cd my_project
    ```
 
-2. **Create and Activate a Virtual Environment**
+2. **Clone the Repositories**  
+   Create a new repository on GitHub for your blog site, then clone both repositories into your project directory:
+   ```bash
+   git clone <your-blog-site-repository-url>
+   git clone <blogi-repository-url>
+   ```
 
+3. **Create and Activate a Virtual Environment**  
+   In the project root, create a virtual environment and activate it:
    ```bash
    python -m venv venv
    source venv/bin/activate     # On Unix or macOS
    .\venv\Scripts\activate      # On Windows
    ```
 
-3. **Install Dependencies**
-
+4. **Install Dependencies**  
+   Install all required Python packages:
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configuration**
-
+5. **Configuration**  
    Create a `.env` file in the project root to store your configuration variables. For example:
-
    ```env
    # API Keys
-   ANTHROPIC_API_KEY=your_anthropic_api_key
-   USERAPI_AI_API_KEY=your_userapi_ai_api_key
-   USERAPI_AI_ACCOUNT_HASH=your_account_hash
+   ANTHROPIC_API_KEY=your_anthropic_api_key  # Used for accessing Anthropic's API to generate content.
+   BRAVE_API_KEY=your_brave_api_key          # Required for Brave Search integration to retrieve relevant information.
+   OPENAI_API_KEY=your_openai_api_key          # Used for OpenAI integrations, such as processing language generation requests.
+   USERAPI_AI_API_KEY=your_userapi_ai_api_key  # Provides API for Midjourney image generation.
+   USERAPI_AI_ACCOUNT_HASH=your_account_hash   # Provides API for Midjourney image generation.
 
-   # Blog configuration
-   BLOG_URL=your_blog_url
+   # Full Obsidian Notes Path (no trailing slashes)
+   OBSIDIAN_NOTES_PATH="/path/to/your/obsidian/notes/vault"  # Specifies the directory where generated blog posts (Obsidian Notes) are stored locally.
+
+   # Blog Base URL (no trailing slashes)
+   BLOG_URL="https://your-blog-url.com"  # The base URL for your live blog site, used for linking and deployment.
+
+   # Blog Site Repo Name
+   BLOG_SITE_REPO="my_blog"  # The designated repository name for your blog site, referenced during deployment to correctly sync and build the site.
    ```
-
    *Ensure you configure all necessary variables required by `blogi/core/config.py`.*
 
 ---
