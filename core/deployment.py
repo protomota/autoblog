@@ -65,9 +65,9 @@ class DeploymentManager:
             return False, e.stderr
 
     def sync_images(self) -> bool:
-        """Verify all images are properly synced."""
+        """Verify and sync all images from Obsidian to website folder."""
         try:
-            self.logger.info("Verifying image sync:")
+            self.logger.info("Verifying and syncing images:")
             self.logger.info(f"  Source: {self.images_source}")
             self.logger.info(f"  Destination: {self.images_dest}")
 
@@ -77,6 +77,9 @@ class DeploymentManager:
                     self.logger.error(f"  Directory not found: {directory}")
                     raise FileNotFoundError(f"Directory not found: {directory}")
                 self.logger.debug(f"  ✓ Validated: {directory}")
+
+            # Create destination directory if it doesn't exist
+            self.images_dest.mkdir(parents=True, exist_ok=True)
 
             # Verify markdown files
             md_files = list(self.dest_path.glob('*.md'))
@@ -92,17 +95,24 @@ class DeploymentManager:
                 if obsidian_links:
                     self.logger.warning(f"    Found {len(obsidian_links)} unconverted image links!")
                 
-                # Verify markdown images
+                # Verify and copy markdown images
                 markdown_links = re.findall(r'!\[.*?\]\(/images/([^)]+)\)', content)
                 if markdown_links:
                     self.logger.info(f"    Found {len(markdown_links)} image references:")
                     for image in markdown_links:
-                        image_path = self.images_dest / image
-                        if image_path.exists():
-                            self.logger.info(f"      ✓ {image_path}")
+                        source_path = self.images_source / image
+                        dest_path = self.images_dest / image
+                        
+                        # Check if source image exists
+                        if source_path.exists():
+                            # Copy image if it doesn't exist in destination or if source is newer
+                            if not dest_path.exists() or (source_path.stat().st_mtime > dest_path.stat().st_mtime):
+                                self.logger.info(f"      Copying: {image}")
+                                shutil.copy2(source_path, dest_path)
+                                self.changes_made = True
+                            self.logger.info(f"      ✓ {dest_path}")
                         else:
-                            self.logger.warning(f"      ✗ Missing: {image_path}")
-                            self.changes_made = True
+                            self.logger.warning(f"      ✗ Source image missing: {source_path}")
                 else:
                     self.logger.info("    No images found")
 
@@ -130,7 +140,7 @@ class DeploymentManager:
                 with open(source_file, "r") as file:
                     content = file.read()
                 
-                content = self._process_images(content, source_file)
+                content = self._process_image_paths_in_content(content, source_file)
                 
                 with open(source_file, "w") as file:
                     file.write(content)
@@ -151,7 +161,7 @@ class DeploymentManager:
             self.logger.exception("Detailed error trace:")
             return False
 
-    def _process_images(self, content: str, source_file: Path) -> str:
+    def _process_image_paths_in_content(self, content: str, source_file: Path) -> str:
         """Process images in content and return updated content."""
         images = re.findall(r'\[\[([^]]*\.png)\]\]', content)
         
