@@ -146,11 +146,6 @@ h2 {
 #filename {
     word-break: break-all;
     color: #4B9AFF;
-    text-decoration: none;
-}
-
-#filename:hover {
-    text-decoration: underline;
 }
 
 .spinner {

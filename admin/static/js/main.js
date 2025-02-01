@@ -179,16 +179,17 @@ function saveFormValues() {
         topic: document.getElementById('topic').value,
         image_prompt: document.getElementById('image_prompt').value,
         webhook_url: document.getElementById('webhook_url').value,
-        chaos_percentage: document.getElementById('chaos_percentage').value
+        chaos_percentage: document.getElementById('chaos_percentage').value,
+        filename: document.getElementById('filename').textContent
     };
-    console.log('Saving form data:', formData); // Debug log
+    console.log('Saving form data:', formData);
     localStorage.setItem('generateFormData', JSON.stringify(formData));
 }
 
 // Function to load form values from localStorage
 function loadFormValues() {
     const savedData = localStorage.getItem('generateFormData');
-    console.log('Loading saved data:', savedData); // Debug log
+    console.log('Loading saved data:', savedData);
     
     if (savedData) {
         const formData = JSON.parse(savedData);
@@ -218,6 +219,17 @@ function loadFormValues() {
                 const chaosSlider = document.getElementById('chaos_percentage');
                 chaosSlider.value = formData.chaos_percentage;
                 document.getElementById('chaos_value').textContent = formData.chaos_percentage;
+            }
+
+            // Restore filename and show container if filename exists
+            if (formData.filename) {
+                const filenameElement = document.getElementById('filename');
+                const filenameContainer = document.getElementById('filename-container');
+                const deployButton = document.getElementById('deployButton');
+                
+                filenameElement.textContent = formData.filename;
+                filenameContainer.classList.remove('hidden');
+                deployButton.classList.remove('hidden');
             }
         }, 100);
     }
