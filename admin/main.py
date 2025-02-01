@@ -63,7 +63,6 @@ async def execute_generate_command(agent_type, agent_name, topic=None, image_pro
                 topic=topic,
                 image_prompt=image_prompt,
                 webhook_url=webhook_url
-                # Remove chaos_percentage from here since we're using the manager
             )
         except Exception as e:
             # If BlogAgent.create fails to return proper tuple

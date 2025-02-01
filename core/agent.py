@@ -134,8 +134,7 @@ class BlogAgent:
                     agent_name: str,
                     topic: str = None,
                     image_prompt: str = None,
-                    webhook_url: str = None,
-                    chaos_percentage: str = "0"):
+                    webhook_url: str = None):
         """Create a new blog post using the specified agent type and parameters."""
         try:
             logger.info(f"\n=== BlogAgent.create Started ===")
@@ -145,7 +144,6 @@ class BlogAgent:
             logger.info(f"  - Topic: {topic}")
             logger.info(f"  - Image Prompt: {image_prompt}")
             logger.info(f"  - Webhook URL: {webhook_url}")
-            logger.info(f"  - Chaos Percentage: {chaos_percentage}")
             
             # If it's a BLOG_ARTIST_RANDOM_PROMPT_ARTIST and no image prompt is provided, generate one
             if agent_name == BLOG_ARTIST_RANDOM_PROMPT_ARTIST and not image_prompt:
