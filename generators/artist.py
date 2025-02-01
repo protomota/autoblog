@@ -66,10 +66,10 @@ class ArtistPostGenerator:
         logger.info(f"SAVED IMAGE_TIMESTAMP: {current_timestamp}")
         
         return {
-            'top_left': f"images/midjourney_{current_timestamp}_top_left.png",
-            'top_right': f"images/midjourney_{current_timestamp}_top_right.png",
-            'bottom_left': f"images/midjourney_{current_timestamp}_bottom_left.png",
-            'bottom_right': f"images/midjourney_{current_timestamp}_bottom_right.png"
+            'top_left': f"images/ai_images/midjourney_{current_timestamp}_top_left.png",
+            'top_right': f"images/ai_images/midjourney_{current_timestamp}_top_right.png",
+            'bottom_left': f"images/ai_images/midjourney_{current_timestamp}_bottom_left.png",
+            'bottom_right': f"images/ai_images/midjourney_{current_timestamp}_bottom_right.png"
         }
     
     def _create_gallery_code(self, image_paths: Dict[str, str]) -> str:
