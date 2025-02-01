@@ -1,4 +1,4 @@
-# Blogi - AI-Powered Blog Post Generator
+# Blogi - AI-Powered Hugo Blog Post Generator
 
 Blogi is an advanced blog post generation system that uses AI agents to create and manage blog content. It features both research-based and art-based content generation capabilities.
 
