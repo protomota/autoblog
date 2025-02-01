@@ -34,18 +34,19 @@ class ResearcherPostGenerator:
             Tuple[str, str]: A tuple containing (filename, blog_page)
         """
         try:
-            templates = await self._load_templates()
+            # Load templates and store them as instance variable
+            self.templates = await self._load_templates()
             research_data = await self._gather_research()
             
             blog_content = await self.agent.anthropic.ask(
-                self._format_prompt(templates['agent_prompt'], research_data)
+                self._format_prompt(self.templates['agent_prompt'], research_data)
             )
             
             if not blog_content:
                 return "default.md", "Failed to generate content"
                 
             metadata = await self._generate_metadata(blog_content)
-            pages = self._format_pages(templates, metadata, blog_content)
+            pages = self._format_pages(self.templates, metadata, blog_content)
             
             filename = self._generate_filename(metadata['filename'])
             blog_page = pages['blog_page']
