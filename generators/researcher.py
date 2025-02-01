@@ -57,7 +57,7 @@ class ResearcherPostGenerator:
             return "error.md", f"Error generating post: {str(e)}"
 
     async def _gather_research(self) -> List[Dict]:
-        search_results = await self.agent.brave_client.search_topic(self.agent.topic)
+        search_results = await self.agent.brave_client.search(self.agent.topic)
         research_data = []
         
         for result in search_results[:3]:
