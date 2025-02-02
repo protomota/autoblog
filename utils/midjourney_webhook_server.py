@@ -69,8 +69,8 @@ class MidjourneyWebhookHandler:
                     quadrant.save(obsidian_output_path)
                     logger.info(f"Saved full-size: {obsidian_output_path}")
                     
-                    # Create and save thumbnail (25% size)
-                    thumb_size = (quadrant.width // 4, quadrant.height // 4)
+                    # Create and save thumbnail (20% size)
+                    thumb_size = (quadrant.width // 5, quadrant.height // 5)
                     thumbnail = quadrant.resize(thumb_size, Image.Resampling.LANCZOS)
                     thumb_filename = f"{base_name}_{position}_thumb.png"
                     thumb_path = OBSIDIAN_AI_IMAGES / thumb_filename
