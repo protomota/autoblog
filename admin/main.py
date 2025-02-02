@@ -9,6 +9,8 @@ import markdown
 import frontmatter
 import json
 from datetime import datetime
+import atexit
+import signal
 
 # Get the absolute path to the project root (protomota directory)
 PROJECT_ROOT = str(Path(__file__).resolve().parents[2])  # Go up 3 levels: admin -> blogi -> protomota
@@ -375,11 +377,39 @@ async def generate_voice():
             'message': f'Voice generation error: {str(e)}'
         })
 
+async def cleanup():
+    """Cleanup function to properly close async resources."""
+    tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+    [task.cancel() for task in tasks]
+    await asyncio.gather(*tasks, return_exceptions=True)
+    
+    # Get the current event loop
+    loop = asyncio.get_event_loop()
+    
+    # Close the loop
+    if not loop.is_closed():
+        loop.stop()
+
+def signal_handler(signame):
+    """Handle shutdown signals gracefully."""
+    logger.info(f"Received signal {signame}")
+    # Run cleanup
+    loop = asyncio.get_event_loop()
+    if not loop.is_closed():
+        loop.run_until_complete(cleanup())
+
 if __name__ == '__main__':
     logger.info("\n=== Starting Application Server ===")
     logger.info("Importing Hypercorn dependencies...")
     from hypercorn.config import Config
     from hypercorn.asyncio import serve
+
+    # Register signal handlers
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        signal.signal(sig, lambda s, f: signal_handler(s))
+
+    # Register cleanup on exit
+    atexit.register(lambda: asyncio.get_event_loop().run_until_complete(cleanup()))
 
     logger.info("Configuring Hypercorn...")
     config = Config()
@@ -391,4 +421,14 @@ if __name__ == '__main__':
     logger.info(f"  - Reloader enabled: {config.use_reloader}")
     logger.info("Starting server...")
     
-    asyncio.run(serve(app, config))
+    try:
+        asyncio.run(serve(app, config))
+    except KeyboardInterrupt:
+        logger.info("Received KeyboardInterrupt, shutting down...")
+    except Exception as e:
+        logger.error(f"Server error: {str(e)}", exc_info=True)
+    finally:
+        # Ensure cleanup runs
+        loop = asyncio.get_event_loop()
+        if not loop.is_closed():
+            loop.run_until_complete(cleanup())
