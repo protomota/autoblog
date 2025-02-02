@@ -5,12 +5,13 @@ import os
 import json
 
 # Configure logging
-from blogi.core.config import logger, PROJECT_ROOT, timestamp_manager
+from blogi.core.config import logger, PROJECT_ROOT, filename_manager
 
 class ArtistPostGenerator:
     def __init__(self, agent):
         self.agent = agent
         self.image_service = None
+        self.filename = None
         
     async def _load_templates(self) -> Dict[str, str]:
         templates = {}
@@ -40,22 +41,38 @@ class ArtistPostGenerator:
             logger.info("Loading templates...")
             templates = await self._load_templates()
             
-            logger.info("Generating image file paths...")
-            image_paths = await self._generate_image_file_paths()
-            
-            logger.info("Creating gallery code...")
-            gallery_code = self._create_gallery_code(image_paths)
-            
             logger.info("Requesting blog content from AI...")
             blog_content = await self.agent.anthropic.ask(
                 self._format_prompt(templates['agent_prompt'], templates['enhanced_prompt'])
             )
             logger.info(f"Received blog content (length: {len(blog_content) if blog_content else 0} characters)")
             
-            # Save blog_content to config.json
-            logger.info("Saving blog content to config file...")
+            if not blog_content:
+                logger.error("Failed to generate blog content")
+                return "default.md", "Failed to generate content"
+                
+            logger.info("Generating metadata...")
+            metadata = await self._generate_metadata(self.agent.image_prompt)
+            logger.info(f"Generated metadata: {metadata}")
+            
+            self.filename = self._generate_filename(metadata['filename'])
+
+            logger.info("Generating image file paths...")
+            image_paths = await self._generate_image_file_paths()
+            
+            logger.info("Creating gallery code...")
+            gallery_code = self._create_gallery_code(image_paths)
+            
+            logger.info("Formatting pages...")
+            pages = self._format_pages(templates, metadata, blog_content, gallery_code)
+            
+            blog_page = pages['blog_page']
+            
+            # Save blog_content and filename to config.json
+            logger.info("Saving blog content and filename to config file...")
             config_data = {
                 'blog_content': blog_content,
+                'filename': self.filename,
                 'timestamp': datetime.now().isoformat()
             }
             
@@ -82,24 +99,10 @@ class ArtistPostGenerator:
                 logger.error(f"Current working directory: {Path.cwd()}")
                 raise  # Re-raise the exception for the outer try-catch block
             
-            if not blog_content:
-                logger.error("Failed to generate blog content")
-                return "default.md", "Failed to generate content"
-                
-            logger.info("Generating metadata...")
-            metadata = await self._generate_metadata(self.agent.image_prompt)
-            logger.info(f"Generated metadata: {metadata}")
-            
-            logger.info("Formatting pages...")
-            pages = self._format_pages(templates, metadata, blog_content, gallery_code)
-            
-            filename = self._generate_filename(metadata['filename'])
-            blog_page = pages['blog_page']
-            
-            logger.info(f"Blog post generation completed successfully. Filename: {filename}")
+            logger.info(f"Blog post generation completed successfully. Filename: {self.filename}")
             logger.info("=== Blog Post Generation Completed ===\n")
             
-            return filename, blog_page
+            return self.filename, blog_page
             
         except Exception as e:
             logger.error("=== Blog Post Generation Failed ===")
@@ -107,17 +110,16 @@ class ArtistPostGenerator:
             return "error.md", f"Error generating post: {str(e)}"
 
     async def _generate_image_file_paths(self) -> Dict[str, str]:
-        new_timestamp = str(int(datetime.now().timestamp()))
-        timestamp_manager.update(new_timestamp)
+        filename_manager.update(self.filename)
         
-        current_timestamp = timestamp_manager.timestamp
-        logger.info(f"SAVED IMAGE_TIMESTAMP: {current_timestamp}")
+        image_filename = filename_manager.filename.replace('.md', '')  # Remove .md extension
+        logger.info(f"SAVED IMAGE_FILENAME: {image_filename}")
         
         return {
-            'top_left': f"/images/ai_images/midjourney_{current_timestamp}_top_left.png",
-            'top_right': f"/images/ai_images/midjourney_{current_timestamp}_top_right.png",
-            'bottom_left': f"/images/ai_images/midjourney_{current_timestamp}_bottom_left.png",
-            'bottom_right': f"/images/ai_images/midjourney_{current_timestamp}_bottom_right.png"
+            'tl': f"/images/ai_images/{image_filename}_tl.png",
+            'tr': f"/images/ai_images/{image_filename}_tr.png",
+            'bl': f"/images/ai_images/{image_filename}_bl.png",
+            'br': f"/images/ai_images/{image_filename}_br.png"
         }
     
     def _create_gallery_code(self, image_paths: Dict[str, str]) -> str:

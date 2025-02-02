@@ -92,17 +92,17 @@ def setup_logging():
 # Create logger instance
 logger = setup_logging()
 
-class TimestampManager:
+class FilenameManager:
     def __init__(self):
-        self._timestamp = "0000000000"
+        self._filename = "0000000000"
     
     @property
-    def timestamp(self):
-        return self._timestamp
+    def filename(self):
+        return self._filename
     
-    def update(self, new_timestamp: str):
-        self._timestamp = new_timestamp
-        logger.info(f"Updated IMAGE_TIMESTAMP to: {self._timestamp}")
+    def update(self, new_filename: str):
+        self._filename = new_filename
+        logger.info(f"Updated IMAGE_FILENAME to: {self._filename}")
 
 class ChaosPercentageManager:
     def __init__(self):
@@ -117,5 +117,5 @@ class ChaosPercentageManager:
         logger.info(f"Updated MIDJOURNEY_CHAOS_PERCENTAGE to: {self._chaos_percentage}")
 
 # Create instances
-timestamp_manager = TimestampManager()
+filename_manager = FilenameManager()
 chaos_percentage_manager = ChaosPercentageManager()

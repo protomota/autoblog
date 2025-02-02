@@ -8,7 +8,7 @@ from datetime import datetime
 from blogi.core.config import (
     logger, 
     USERAPI_AI_API_BASE_URL, 
-    timestamp_manager, 
+    filename_manager, 
     MIDJOURNEY_ASPECT_RATIO,
     chaos_percentage_manager  # Replace MIDJOURNEY_CHAOS_PERCENTAGE with this
 )
@@ -26,8 +26,8 @@ class MidjourneyImageService:
 
         # Add timestamp to webhook URL as query parameter
         webhook_base = webhook_url.rstrip('/') + '/imagine/webhook'
-        current_timestamp = timestamp_manager.timestamp
-        self.webhook_url = f"{webhook_base}?image_timestamp={current_timestamp}"
+        image_filename = filename_manager.filename.replace('.md', '') # Remove .md extension
+        self.webhook_url = f"{webhook_base}?image_filename={image_filename}"
         logger.info(f"INIT MidjourneyImageService WITH WEBHOOK URL: {self.webhook_url}")
         self.headers = {
             "api-key": self.api_key,

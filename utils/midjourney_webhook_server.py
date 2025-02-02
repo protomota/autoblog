@@ -57,7 +57,7 @@ class MidjourneyWebhookHandler:
             ]
             
             base_name = Path(dated_ai_image_path).stem
-            positions = ['top_left', 'top_right', 'bottom_left', 'bottom_right']
+            positions = ['tl', 'tr', 'bl', 'br']
             
             for coords, position in zip(coordinates, positions):
                 quadrant = img.crop(coords)
@@ -109,10 +109,10 @@ class MidjourneyWebhookHandler:
             logger.error(f"Failed to download image: {e}")
             raise
 
-    def save_image_and_prompt(self, image_url, prompt, image_timestamp):
+    def save_image_and_prompt(self, image_url, prompt, image_filename):
         """Process and save the image and prompt."""
         try:
-            logger.info(f"Saving image and prompt for timestamp: {image_timestamp}")
+            logger.info(f"Saving image and prompt for image_filename: {image_filename}")
             # Create directories if they don't exist
             BLOG_SITE_STATIC_IMAGES_PATH.mkdir(parents=True, exist_ok=True)
             if OBSIDIAN_AI_IMAGES:
@@ -120,8 +120,8 @@ class MidjourneyWebhookHandler:
             
             # Setup paths and save files
             dated_obsidian_paths = {
-                'image': OBSIDIAN_AI_IMAGES / f"midjourney_{image_timestamp}.png",
-                'prompt': OBSIDIAN_AI_IMAGES / f"midjourney_{image_timestamp}.md"
+                'image': OBSIDIAN_AI_IMAGES / f"{image_filename}.png",
+                'prompt': OBSIDIAN_AI_IMAGES / f"{image_filename}.md"
             }
 
             self.save_prompt_to_file(prompt, dated_obsidian_paths['prompt'])
@@ -155,7 +155,7 @@ def webhook_handler_route():
                 image_url = data.get('result', {}).get('url')
                 prompt = data.get('prompt') or data.get('result', {}).get('prompt') or "No prompt available"
                 # Get timestamp from URL query parameter instead of payload
-                image_timestamp = request.args.get('image_timestamp') or "0000000000"
+                image_filename = request.args.get('image_filename') or "0000000000"
 
                 if image_url:
                     # Check if we've already processed this URL
@@ -164,8 +164,8 @@ def webhook_handler_route():
                         return jsonify({'status': 'success', 'message': 'Already processed'}), 200
                     
                     logger.info(f"QUAD Image generation completed. URL: {image_url}")
-                    logger.info(f"Using image timestamp: {image_timestamp}")
-                    webhook_handler.save_image_and_prompt(image_url, prompt, image_timestamp)
+                    logger.info(f"Using image_filename: {image_filename}")
+                    webhook_handler.save_image_and_prompt(image_url, prompt, image_filename)
                     webhook_handler.mark_as_processed(image_url)
                     return jsonify({'status': 'success', 'image_url': image_url}), 200
                 else:
