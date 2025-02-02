@@ -164,11 +164,21 @@ class DeploymentManager:
         try:
             self.dest_path.mkdir(parents=True, exist_ok=True)
             
-            source_files = [f for f in self.origin_path.glob('*.md')]
-            self.logger.info(f"Checking {len(source_files)} files for changes:")
+            # Get lists of files in both directories
+            source_files = set(f.name for f in self.origin_path.glob('*.md'))
+            dest_files = set(f.name for f in self.dest_path.glob('*.md'))
             
+            # Find files to remove (in dest but not in source)
+            files_to_remove = dest_files - source_files
+            for filename in files_to_remove:
+                file_to_remove = self.dest_path / filename
+                self.logger.info(f"Removing file: {filename}")
+                file_to_remove.unlink()
+                self.changes_made = True
+            
+            # Process source files
             files_processed = 0
-            for source_file in source_files:
+            for source_file in self.origin_path.glob('*.md'):
                 self.logger.info(f"Checking file: {source_file.name}")
                 
                 dest_file = self.dest_path / source_file.name
@@ -185,9 +195,9 @@ class DeploymentManager:
                 
                 files_processed += 1
                 
-            if files_processed > 0:
+            if files_processed > 0 or files_to_remove:
                 self.changes_made = True
-                self.logger.info(f"Content sync completed successfully ({files_processed} files updated)")
+                self.logger.info(f"Content sync completed successfully ({files_processed} files updated, {len(files_to_remove)} files removed)")
             else:
                 self.logger.info("No files needed updating")
             return True
