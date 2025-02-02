@@ -4,6 +4,11 @@ from pathlib import Path
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
+import requests
+import markdown
+import frontmatter
+import json
+from datetime import datetime
 
 # Get the absolute path to the project root (protomota directory)
 PROJECT_ROOT = str(Path(__file__).resolve().parents[2])  # Go up 3 levels: admin -> blogi -> protomota
@@ -15,7 +20,6 @@ sys.path.insert(0, PROJECT_ROOT)
 # Now import Flask and other standard libraries
 from flask import Flask, render_template, request, jsonify, url_for
 import subprocess
-import json
 import shlex
 
 # Configuration
@@ -25,7 +29,9 @@ from blogi.core.config import (
     BLOG_AGENT_NAMES,
     BLOG_RESEARCHER_AI_AGENT, 
     BLOG_ARTIST_AI_AGENT,
-    chaos_percentage_manager
+    chaos_percentage_manager,
+    OBSIDIAN_AI_POSTS_PATH,
+    ELEVENLABS_API_KEY
 )
 from blogi.core.agent import BlogAgent
 from blogi.core.deployment import DeploymentManager
@@ -39,6 +45,8 @@ logger.info("=== Application Initialization Started ===")
 logger.info(f"Project root path: {PROJECT_ROOT}")
 logger.info(f"Python path: {os.environ['PYTHONPATH']}")
 logger.info("Loading Flask application and dependencies...")
+
+# Add this near the top with other config imports
 
 async def execute_generate_command(agent_type, agent_name, topic=None, image_prompt=None, webhook_url=None, chaos_percentage="0"):
     """Execute the command using the BlogAgent directly."""
@@ -257,6 +265,114 @@ async def deploy():
         return jsonify({
             'success': False,
             'message': f'Deployment error: {str(e)}'
+        })
+
+@app.route('/generate-voice', methods=['POST'])
+async def generate_voice():
+    """Handle voice over generation."""
+    logger.info("\n=== Voice Over Generation Started ===")
+    try:
+        # Get the filename from the request
+        data = request.get_json()
+        original_filename = data.get('filename', '')
+        logger.info(f"Original blog post filename: {original_filename}")
+        
+        # Load content from config file
+        config_path = Path('tmp/config.json')
+        logger.info(f"Looking for config file at: {config_path} (absolute: {config_path.absolute()})")
+        
+        if not config_path.exists():
+            logger.error(f"Config file not found at: {config_path}")
+            return jsonify({
+                'success': False,
+                'message': 'Config file not found. Please generate a blog post first.'
+            })
+
+        # Read the config file
+        try:
+            logger.info("Reading config file...")
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config_data = json.load(f)
+            
+            text = config_data.get('blog_content')
+            if not text:
+                logger.error("No blog content found in config file")
+                return jsonify({
+                    'success': False,
+                    'message': 'No blog content found in config file'
+                })
+            
+            logger.info(f"Successfully loaded blog content (length: {len(text)} characters)")
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse config file: {str(e)}")
+            return jsonify({
+                'success': False,
+                'message': 'Failed to parse config file'
+            })
+        
+        # Clean up the text
+        logger.info("Processing text for voice generation...")
+        text = ' '.join(text.split())  # Clean up whitespace
+        logger.info(f"Processed text length: {len(text)} characters")
+        
+        # Call ElevenLabs API
+        logger.info("Preparing ElevenLabs API call...")
+        url = "https://api.elevenlabs.io/v1/text-to-speech/qNkzaJoHLLdpvgh5tISm"
+        headers = {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": ELEVENLABS_API_KEY
+        }
+        
+        data = {
+            "text": text,
+            "model_id": "eleven_monolingual_v1",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.5
+            }
+        }
+
+        logger.info("Making request to ElevenLabs API...")
+        response = requests.post(url, json=data, headers=headers)
+        logger.info(f"ElevenLabs API response status code: {response.status_code}")
+        
+        if response.status_code != 200:
+            logger.error(f"ElevenLabs API error response: {response.text}")
+            return jsonify({
+                'success': False,
+                'message': f'ElevenLabs API error: {response.text}'
+            })
+
+        # Ensure the output directory exists
+        output_dir = Path(OBSIDIAN_AI_POSTS_PATH)
+        logger.info(f"Creating output directory if needed: {output_dir}")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename based on original blog post name
+        audio_filename = original_filename.replace('.md', '_voice.mp3')
+        output_path = output_dir / audio_filename
+        logger.info(f"Saving audio file to: {output_path}")
+        
+        with open(output_path, 'wb') as f:
+            f.write(response.content)
+        
+        logger.info(f"Audio file saved successfully. Size: {len(response.content)} bytes")
+        logger.info("=== Voice Over Generation Completed Successfully ===")
+            
+        return jsonify({
+            'success': True,
+            'message': f'Voice over generated successfully: {audio_filename}',
+            'audio_path': str(output_path)
+        })
+            
+    except Exception as e:
+        logger.error("=== Voice Over Generation Failed ===")
+        logger.error(f"Error in generate-voice endpoint: {str(e)}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': f'Voice generation error: {str(e)}'
         })
 
 if __name__ == '__main__':

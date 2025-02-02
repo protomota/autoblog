@@ -225,10 +225,12 @@ function loadFormValues() {
             if (formData.filename) {
                 const filenameElement = document.getElementById('filename');
                 const filenameContainer = document.getElementById('filename-container');
+                const voiceOverButton = document.getElementById('voiceOverButton');
                 const deployButton = document.getElementById('deployButton');
                 
                 filenameElement.textContent = formData.filename;
                 filenameContainer.classList.remove('hidden');
+                voiceOverButton.classList.remove('hidden');
                 deployButton.classList.remove('hidden');
             }
         }, 100);
@@ -305,6 +307,52 @@ async function deployPosts() {
     }
 }
 
+// Voice over button handler
+async function generateVoiceOver() {
+    const voiceOverButton = document.getElementById('voiceOverButton');
+    const voiceOverButtonText = document.getElementById('voiceOverButtonText');
+    const voiceOverButtonSpinner = document.getElementById('voiceOverButtonSpinner');
+    const consoleLog = document.getElementById('console-log');
+    const filename = document.getElementById('filename').textContent;
+
+    // Disable button and show loading state
+    voiceOverButton.disabled = true;
+    voiceOverButtonText.textContent = 'Generating Voice Over...';
+    voiceOverButtonSpinner.classList.remove('hidden');
+
+    try {
+        appendToConsole(consoleLog, 'Starting voice over generation...');
+        
+        const response = await fetch('/generate-voice', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ filename })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.success) {
+            appendToConsole(consoleLog, data.message, 'success');
+        } else {
+            throw new Error(data.message || 'Voice over generation failed');
+        }
+    } catch (error) {
+        console.error('Error during voice over generation:', error);
+        appendToConsole(consoleLog, `Error: ${error.message}`, 'error');
+    } finally {
+        // Reset button state
+        voiceOverButton.disabled = false;
+        voiceOverButtonText.textContent = 'Generate Voice Over';
+        voiceOverButtonSpinner.classList.add('hidden');
+    }
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners
@@ -338,6 +386,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add deployment button listener
     document.getElementById('deployButton').addEventListener('click', deployPosts);
+
+    // Add voice over button listener
+    document.getElementById('voiceOverButton').addEventListener('click', generateVoiceOver);
 
     // Initialize fields
     updateAgentNames();
@@ -464,13 +515,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     appendToConsole(consoleLog, successMessage, 'success');
                     
-                    // Handle filename display and deploy button
+                    // Handle filename display and buttons
                     if (data.filename) {
                         const filenameElement = document.getElementById('filename');
+                        const filenameContainer = document.getElementById('filename-container');
+                        const voiceOverButton = document.getElementById('voiceOverButton');
+                        const deployButton = document.getElementById('deployButton');
+                        
                         filenameElement.textContent = data.filename;
-                        document.getElementById('filename-container').classList.remove('hidden');
+                        filenameContainer.classList.remove('hidden');
                         appendToConsole(consoleLog, `Blog Post generated successfully: ${data.filename}`);
-                        // Show deploy button when filename is displayed
+                        
+                        // Show both buttons together
+                        voiceOverButton.classList.remove('hidden');
                         deployButton.classList.remove('hidden');
                     }
                 } else {

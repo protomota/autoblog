@@ -173,3 +173,14 @@ h2 {
     margin-top: 10px;
     width: 100%;
 }
+
+#voiceOverButton {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: #4CAF50;  /* Green color to differentiate */
+}
+
+#voiceOverButton:hover {
+    background-color: #45a049;
+}

@@ -54,3 +54,12 @@ hypercorn>=0.15.0
 
 # HTTP Client
 httpx==0.27.2
+    
+# ElevenLabs API
+elevenlabs>=2.0.0
+
+# Markdown Processing
+markdown>=3.4.0
+
+# Frontmatter Processing
+python-frontmatter>=1.0.0
