@@ -225,12 +225,10 @@ function loadFormValues() {
             if (formData.filename) {
                 const filenameElement = document.getElementById('filename');
                 const filenameContainer = document.getElementById('filename-container');
-                const voiceOverButton = document.getElementById('voiceOverButton');
                 const deployButton = document.getElementById('deployButton');
                 
                 filenameElement.textContent = formData.filename;
                 filenameContainer.classList.remove('hidden');
-                voiceOverButton.classList.remove('hidden');
                 deployButton.classList.remove('hidden');
             }
         }, 100);
@@ -515,19 +513,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     appendToConsole(consoleLog, successMessage, 'success');
                     
-                    // Handle filename display and buttons
+                    // Handle filename display and deploy button
                     if (data.filename) {
                         const filenameElement = document.getElementById('filename');
-                        const filenameContainer = document.getElementById('filename-container');
-                        const voiceOverButton = document.getElementById('voiceOverButton');
-                        const deployButton = document.getElementById('deployButton');
-                        
                         filenameElement.textContent = data.filename;
-                        filenameContainer.classList.remove('hidden');
+                        document.getElementById('filename-container').classList.remove('hidden');
                         appendToConsole(consoleLog, `Blog Post generated successfully: ${data.filename}`);
-                        
-                        // Show both buttons together
-                        voiceOverButton.classList.remove('hidden');
+                        // Show both buttons when filename is displayed
+                        document.getElementById('voiceOverButton').classList.remove('hidden');
                         deployButton.classList.remove('hidden');
                     }
                 } else {
