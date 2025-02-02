@@ -37,9 +37,8 @@ class MidjourneyWebhookHandler:
         ).hexdigest()
         return hmac.compare_digest(expected_signature, signature)
 
-    def slice_and_save_images(self,
-                              dated_ai_image_path):
-        """Slices an image into four equal-sized quadrants while maintaining aspect ratio."""
+    def slice_and_save_images(self, dated_ai_image_path):
+        """Slices an image into four equal-sized quadrants and creates thumbnails."""
         try:
             logger.info(f"Slicing and saving images for dated_ai_image_path: {dated_ai_image_path}")
 
@@ -63,11 +62,20 @@ class MidjourneyWebhookHandler:
             for coords, position in zip(coordinates, positions):
                 quadrant = img.crop(coords)
                 
+                # Save full-size quadrant
                 filename = f"{base_name}_{position}.png"
                 obsidian_output_path = OBSIDIAN_AI_IMAGES / filename
                 try:
                     quadrant.save(obsidian_output_path)
-                    logger.info(f"Saved: {obsidian_output_path}")
+                    logger.info(f"Saved full-size: {obsidian_output_path}")
+                    
+                    # Create and save thumbnail (25% size)
+                    thumb_size = (quadrant.width // 4, quadrant.height // 4)
+                    thumbnail = quadrant.resize(thumb_size, Image.Resampling.LANCZOS)
+                    thumb_filename = f"{base_name}_{position}_thumb.png"
+                    thumb_path = OBSIDIAN_AI_IMAGES / thumb_filename
+                    thumbnail.save(thumb_path)
+                    logger.info(f"Saved thumbnail: {thumb_path}")
                         
                 except Exception as e:
                     logger.error(f"Error saving {obsidian_output_path}: {e}")
